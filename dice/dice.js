@@ -277,10 +277,10 @@
     };
     this.label_color = '#aaaaaa';
     this.dice_color = '#202020';
-    this.ambient_light_color = 0xf0f5fb;
+    this.ambient_light_color = 0xf0f0f0;
     this.spot_light_color = 0xefdfd5;
     this.selector_back_colors = { color: 0x404040, shininess: 0, emissive: 0x858787 };
-    this.desk_color = 0xdfdfdf;
+    this.desk_color = '#101010';
     this.use_shadows = true;
 
     this.known_types = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];

@@ -1,3 +1,13 @@
+#diceRoller {
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* ****************************** */
+
 .center_field {
     position: absolute;
     text-align: center;
@@ -16,6 +26,14 @@
     background-color: rgba(0, 0, 0, 0);
 }
 
+.top_field {
+    position: absolute;
+    text-align: center;
+    top: 5px;
+    width: 100%;
+    padding: 0px;
+}
+
 .bottom_field {
     position: absolute;
     text-align: center;
@@ -28,7 +46,7 @@
     font-size: 32pt;
     word-spacing: 0.5em;
     padding: 5px 15px;
-    color: rgba(21, 26, 26, 0.6);
+    color: rgba(50, 53, 53, 0.6);
     top: 45%;
 }
 
@@ -46,6 +64,7 @@
     color: rgba(0, 0, 0, 0.8);
     background-color: rgba(255, 255, 255, 0);
     top: 60%;
+    width: 100%;
 }
 
 #sethelp {

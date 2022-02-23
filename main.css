@@ -28,6 +28,8 @@ em {
 
 body {
     font-family: Georgia;
+    margin: 0;
+    overflow: hidden;
 }
 
 h6 {
@@ -40,11 +42,4 @@ p {
     font-size: 80%;
     margin-top: 5px;
     margin-bottom: 0px;
-}
-
-.control_panel {
-    padding: 15px;
-    padding-bottom: 0px;
-    position: absolute;
-    z-index: 10;
 }
