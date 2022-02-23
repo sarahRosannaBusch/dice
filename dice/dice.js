@@ -3,7 +3,7 @@
 (function(dice) {
 
     var random_storage = [];
-    this.use_true_random = true;
+    this.use_true_random = false; 
     this.frame_rate = 1 / 60;
 
     function prepare_rnd(callback) {
@@ -390,12 +390,12 @@
         this.world = new CANNON.World();
 
         this.renderer = window.WebGLRenderingContext
-            ? new THREE.WebGLRenderer({ antialias: true })
-            : new THREE.CanvasRenderer({ antialias: true });
+            ? new THREE.WebGLRenderer({ antialias: true, alpha: true })
+            : new THREE.CanvasRenderer({ antialias: true, alpha: true });
         container.appendChild(this.renderer.domElement);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFShadowMap;
-        this.renderer.setClearColor(0xffffff, 1);
+        this.renderer.setClearColor(0xffffff, 0); //color, alpha
 
         this.reinit(container, dimentions);
 
@@ -485,7 +485,7 @@
         this.desk = new THREE.Mesh(new THREE.PlaneGeometry(this.w * 2, this.h * 2, 1, 1), 
                 new THREE.MeshPhongMaterial({ color: that.desk_color }));
         this.desk.receiveShadow = that.use_shadows;
-        this.scene.add(this.desk);
+        this.scene.add(this.desk); //remove desk for transparent background
 
         this.renderer.render(this.scene, this.camera);
     }
