@@ -2,6 +2,10 @@
     width: 100vw;
     height: 100vh;
     background: #202020;
+    background-image: url("background.svg");
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: cover;
     margin: 0;
     overflow: hidden;
 }
@@ -37,7 +41,7 @@
 .bottom_field {
     position: absolute;
     text-align: center;
-    bottom: 5px;
+    bottom: 15px;
     width: inherit;
     padding: 0px;
 }
@@ -45,9 +49,7 @@
 #label {
     font-size: 32pt;
     word-spacing: 0.5em;
-    padding: 5px 15px;
-    color: rgba(50, 53, 53, 0.6);
-    top: 45%;
+    color: rgba(255,255,255,0.6);
 }
 
 #labelhelp {
@@ -81,7 +83,7 @@
     cursor: pointer;
     border: none;
     width: 5em;
-    top: 62%;
+    top: 43%;
 }
 
 .dice_place {

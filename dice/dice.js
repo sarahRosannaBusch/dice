@@ -187,7 +187,7 @@
             var context = canvas.getContext("2d");
             var ts = calc_texture_size(size + margin) * 2;
             canvas.width = canvas.height = ts;
-            context.font = (ts - margin) / 1.5 + "pt Arial";
+            context.font = (ts - margin) * 0.5 + "pt Arial";
             context.fillStyle = back_color;
             context.fillRect(0, 0, canvas.width, canvas.height);
             context.textAlign = "center";
@@ -278,7 +278,7 @@
     this.label_color = '#aaaaaa';
     this.dice_color = '#202020';
     this.ambient_light_color = 0xf0f0f0;
-    this.spot_light_color = 0xefdfd5;
+    this.spot_light_color = 0xefddd5;
     this.selector_back_colors = { color: 0x404040, shininess: 0, emissive: 0x858787 };
     this.desk_color = '#101010';
     this.use_shadows = true;
@@ -289,7 +289,7 @@
     this.dice_mass = { 'd4': 300, 'd6': 300, 'd8': 340, 'd10': 350, 'd12': 350, 'd20': 400, 'd100': 350 };
     this.dice_inertia = { 'd4': 5, 'd6': 13, 'd8': 10, 'd10': 9, 'd12': 8, 'd20': 6, 'd100': 9 };
 
-    this.scale = 50;
+    this.scale = 100;
 
     this.create_d4 = function() {
         if (!this.d4_geometry) this.d4_geometry = this.create_d4_geometry(this.scale * 1.2);
@@ -299,9 +299,9 @@
     }
 
     this.create_d6 = function() {
-        if (!this.d6_geometry) this.d6_geometry = this.create_d6_geometry(this.scale * 0.9);
+        if (!this.d6_geometry) this.d6_geometry = this.create_d6_geometry(this.scale * 1.2);
         if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.0));
+                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 0.9));
         return new THREE.Mesh(this.d6_geometry, this.dice_material);
     }
 
@@ -456,7 +456,8 @@
             this.h = this.ch;
         }
         this.aspect = Math.min(this.cw / this.w, this.ch / this.h);
-        that.scale = Math.sqrt(this.w * this.w + this.h * this.h) / 13;
+        that.scale = Math.sqrt(this.w * this.w + this.h * this.h) / 10;
+        console.log('scale = ' + that.scale);
 
         this.renderer.setSize(this.cw * 2, this.ch * 2);
 
@@ -483,9 +484,9 @@
 
         if (this.desk) this.scene.remove(this.desk);
         this.desk = new THREE.Mesh(new THREE.PlaneGeometry(this.w * 2, this.h * 2, 1, 1), 
-                new THREE.MeshPhongMaterial({ color: that.desk_color }));
+                new THREE.MeshPhongMaterial({ color: that.desk_color, opacity: 0.5, transparent: true }));
         this.desk.receiveShadow = that.use_shadows;
-        this.scene.add(this.desk); //remove desk for transparent background
+        this.scene.add(this.desk); 
 
         this.renderer.render(this.scene, this.camera);
     }

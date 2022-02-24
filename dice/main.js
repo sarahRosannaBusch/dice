@@ -20,7 +20,7 @@ function dice_initialize() {
     var params = $t.get_url_params();
 
     if (params.chromakey) {
-        $t.dice.desk_color = "rgba(0,0,0,0)";
+        $t.dice.desk_color = "#0000FF";
     }
     if (params.shadows == 0) {
         $t.dice.use_shadows = false;
@@ -30,13 +30,13 @@ function dice_initialize() {
         $t.dice.label_color = '#202020';
     }
 
-    var box = new $t.dice.dice_box(canvas, { w: 500, h: 300 });
+    var box = new $t.dice.dice_box(canvas);
     box.animate_selector = false;
 
     $t.bind(window, 'resize', function() {
         canvas.style.width = container.offsetWidth - 1 + 'px';
         canvas.style.height = container.offsetHeight - 1 + 'px';
-        box.reinit(canvas, { w: 500, h: 300 });
+        box.reinit(canvas);
     });
 
     box.bind_mouse(container, notation_getter, before_roll, after_roll);
@@ -75,6 +75,13 @@ function dice_initialize() {
 
     function before_roll(vectors, notation, callback) {
         selector_div.style.display = 'none';
+        let numDice = notation.set.length;
+        for(let i = 0; i < numDice; i++) {
+            let volume = i/10;
+            if(volume <= 0) volume = 0.1;
+            if(volume > 1) volume = 1;
+            playSound(container, volume);
+        }
         // do here rpc call or whatever to get your own result of throw.
         // then callback with array of your result, example:
         // callback([2, 2, 2, 2]); // for 4d6 where all dice values are 2.
@@ -92,5 +99,19 @@ function dice_initialize() {
                 (result.reduce(function(s, a) { return s + a; }) + notation.constant);
         label.innerHTML = res;
         console.log('result: ' + res);
+    }
+
+    //playSound function and audio file copied from 
+    //https://github.com/chukwumaijem/roll-a-die
+    function playSound(outerContainer, soundVolume) {
+        if (soundVolume === 0) return;
+        const audio = document.createElement('audio');
+        outerContainer.appendChild(audio);
+        audio.src = 'nc93322.mp3';
+        audio.volume = soundVolume;
+        audio.play();
+        audio.onended = () => {
+          audio.remove();
+        };
     }
 }
