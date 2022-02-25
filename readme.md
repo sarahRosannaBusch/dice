@@ -5,7 +5,9 @@ My goal here is to make a truly satisfying dice roller. One that's the next best
 TECHNICAL
 
 To run open dice/index.html with your browser.
+
 Can be used stand-alone or be easily integrated into a webpage or app.
+
 dice.py is a GAE serverlet that makes proxy requests to random.org API.
 
 CREDITS
