@@ -53,6 +53,7 @@ function dice_initialize() {
     function before_roll(vectors, notation, callback) {
         selector_div.style.display = 'none';
         label.innerHTML = '';
+        label.style.display = 'none';
         let numDice = notation.set.length;
         for(let i = 0; i < numDice; i++) {
             let volume = i/10;
@@ -67,18 +68,21 @@ function dice_initialize() {
     }
 
     function after_roll(notation, result) {
+        console.log('after_roll result: ' + JSON.stringify(result));
+        console.log('after_roll notation: ' + JSON.stringify(notation));
         var res = result.join(' ');
         if (notation.constant) {
             if (notation.constant > 0) res += ' +' + notation.constant;
             else res += ' -' + Math.abs(notation.constant);
         }
-        if (result.length > 1) res += ' = ' + 
+        if (result.length > 1 || notation.constant) res += ' = ' + 
                 (result.reduce(function(s, a) { return s + a; }) + notation.constant);
-        if(res < 0) {
-            label.innerHTML = "Oops, your dice fell off the table. Roll again."
+        if(result[0] < 0) {
+            label.innerHTML = "Oops, your dice fell off the table. Refresh and roll again."
         } else {
             label.innerHTML = res;
         }
+        label.style.display = 'inline-block';
         console.log('result: ' + res);
     }
 

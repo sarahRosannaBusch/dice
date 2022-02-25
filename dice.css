@@ -30,14 +30,14 @@
     font-size: 26pt;
     border: none;
     color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(140,140,140,0.4);
+    background-color: rgba(150,150,150,0.5);
     max-width: 100%;
     text-overflow: ellipsis;
     padding: 0.2em;
 }
 
 #set:focus {
-    background-color: rgba(150,150,150,0.6);
+    background-color: rgba(150,150,150,0.7);
     outline: none;
 }
 
@@ -82,4 +82,7 @@
     font-size: 32pt;
     word-spacing: 0.5em;
     color: rgba(255,255,255,0.6);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0.25em;
+    padding-top: 0.1em;
 }
