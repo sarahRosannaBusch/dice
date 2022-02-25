@@ -4,33 +4,35 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="keywords" content="DnD, dangeon and dragons, roleplay, dice, roller, 3D, RPG, wargame"/>
-    <meta name="description" content="The best free 3D dice roller web app"/>
+    <meta name="description" content="The best free online 3D dice roller web app"/>
     <title>Dice</title>
     <meta name='author' content='Sarah Rosanna Busch' />
     <meta name='contact' content='sarahrosannabusch.ca' />
     <meta name='date' content='23 Feb 2022' />
+    <meta name='credits' content="This app is derived from the work of Anton Natarov (aka Teal) found at http://www.teall.info/2014/01/online-3d-dice-roller.html" />
     <meta name='viewport' content='width=device-width, initial-scale=1.0' /> <!-- for responsiveness -->
     <link rel='icon shortcut' href='icon.png' />
     <style type="text/css">@import "../main.css";</style>
     <style type="text/css">@import "dice.css";</style>
-
 </head>
 
 <body onload="dice_initialize()">
-    <main id="diceRoller">
+    <main id="diceRollerUI">
         <div class="top_field">
-            <input type="text" id="set" value="1d4+1d6+1d8+1d10+1d12+1d20+1d100"></input>
+            <input type="text" id="set" value="1d100+1d10"></input>
         </div>
-        <div id="selector_div" style="display: none">
-            <div class="center_field">
+        <div id='center_div' class="center_field">
+            <div id="selector_div" style="display: none">
                 <button style="margin-left: 0.6em" id="throw">Roll Dice</button>
             </div>
         </div>  
         <div class="bottom_field">
             <span id="label"></span>
         </div>  
-        <div id="canvas"></div>
     </main>
+    <div id="diceRoller">
+        <div id="canvas"></div>
+    </div>
 
     <script src="../libs/three.min.js"></script>
     <script src="../libs/cannon.min.js"></script>

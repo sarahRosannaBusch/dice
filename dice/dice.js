@@ -3,7 +3,7 @@
 (function(dice) {
 
     var random_storage = [];
-    this.use_true_random = false; 
+    this.use_true_random = true; 
     this.frame_rate = 1 / 60;
 
     function prepare_rnd(callback) {
@@ -278,7 +278,7 @@
     this.label_color = '#aaaaaa';
     this.dice_color = '#202020';
     this.ambient_light_color = 0xf0f0f0;
-    this.spot_light_color = 0xefddd5;
+    this.spot_light_color = 0xefefef;
     this.selector_back_colors = { color: 0x404040, shininess: 0, emissive: 0x858787 };
     this.desk_color = '#101010';
     this.use_shadows = true;
@@ -457,7 +457,7 @@
         }
         this.aspect = Math.min(this.cw / this.w, this.ch / this.h);
         that.scale = Math.sqrt(this.w * this.w + this.h * this.h) / 10;
-        console.log('scale = ' + that.scale);
+        //console.log('scale = ' + that.scale);
 
         this.renderer.setSize(this.cw * 2, this.ch * 2);
 

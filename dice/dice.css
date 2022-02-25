@@ -1,19 +1,49 @@
 #diceRoller {
+    position: absolute;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index:-1;
+}
+
+#diceRollerUI {
     width: 100vw;
     height: 100vh;
-    background: #202020;
-    background-image: url("background.svg");
-    background-repeat: no-repeat;
-    background-position: right bottom;
-    background-size: cover;
     margin: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-size: 26pt;
 }
 
 /* ****************************** */
 
+.top_field {
+    height: 2em;
+    text-align: center;
+    width: 100%;
+    padding: 5px;
+}
+
+#set { /* text input */
+    text-align: center;
+    font-size: 26pt;
+    border: none;
+    color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(100,100,100,0.1);
+    width: 100%;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    padding: 0.2em;
+}
+
+#set:focus {
+    background-color: rgba(150,150,150,0.6);
+    outline: none;
+}
+
 .center_field {
-    position: absolute;
+    flex: 1;
     text-align: center;
     height: 100%;
     width: 100%;
@@ -26,16 +56,20 @@
     padding: 5px 15px;
 }
 
-.center_field br {
-    background-color: rgba(0, 0, 0, 0);
+#selector_div {
+    background: none;
+    height: 100%;
+    width: 100%;
 }
 
-.top_field {
-    position: absolute;
-    text-align: center;
-    top: 5px;
-    width: 100%;
-    padding: 0px;
+#selector_div button {
+    font-size: 20pt;
+    color: rgb(255, 255, 255);
+    background-color: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    border: none;
+    width: 5em;
+    top: 35%;
 }
 
 .bottom_field {
@@ -50,43 +84,4 @@
     font-size: 32pt;
     word-spacing: 0.5em;
     color: rgba(255,255,255,0.6);
-}
-
-#labelhelp {
-    font-size: 12pt;
-    padding: 5px 15px;
-    color: rgba(21, 26, 26, 0.5);
-    bottom: 50px;
-}
-
-#set {
-    text-align: center;
-    font-size: 26pt;
-    border: none;
-    color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(255, 255, 255, 0);
-    top: 60%;
-    width: 100%;
-}
-
-#sethelp {
-    font-size: 12pt;
-    color: rgba(21, 26, 26, 0.5);
-    background: none;
-    top: 25%;
-}
-
-#selector_div button {
-    font-size: 20pt;
-    color: rgb(255, 255, 255);
-    background-color: rgba(0, 0, 0, 0.6);
-    cursor: pointer;
-    border: none;
-    width: 5em;
-    top: 43%;
-}
-
-.dice_place {
-    position: absolute;
-    border: solid black 1px;
 }

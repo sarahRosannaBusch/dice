@@ -1,29 +1,6 @@
-#svg *, .svg * {
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-}
-
-#waitform {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 10000;
-    cursor: wait;
-}
-
-a {
-    color: gray;
-}
-
-em {
-    border: 1px rgba(0, 0, 0, 0.2) solid;
-    font-style: normal;
-    padding: 0px 3px;
-    background-color: rgba(0, 0, 0, 0.08);
-    border-radius: 3px;
+* {
+    box-sizing: border-box; /* padding and border are included in total width/height of all elements */
+    margin: 0px;
 }
 
 body {
@@ -31,16 +8,8 @@ body {
     margin: 0;
     overflow: hidden;    
     background: #202020;
-}
-
-h6 {
-    font-size: 100%;
-    font-weight: normal;
-    margin: 0px;
-}
-
-p {
-    font-size: 80%;
-    margin-top: 5px;
-    margin-bottom: 0px;
+    background-image: url("dice/background.svg");
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: cover;
 }
