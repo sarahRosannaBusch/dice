@@ -8,7 +8,7 @@ body {
     margin: 0;
     overflow: hidden;    
     background: #202020;
-    background-image: url("dice/background.svg");
+    background-image: url("assets/background.svg");
     background-repeat: no-repeat;
     background-position: right bottom;
     background-size: cover;

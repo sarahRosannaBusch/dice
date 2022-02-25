@@ -83,7 +83,7 @@ function dice_initialize() {
         if (soundVolume === 0) return;
         const audio = document.createElement('audio');
         outerContainer.appendChild(audio);
-        audio.src = 'nc93322.mp3';
+        audio.src = 'assets/nc93322.mp3';
         audio.volume = soundVolume;
         audio.play();
         audio.onended = () => {
