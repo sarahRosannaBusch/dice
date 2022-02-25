@@ -9,6 +9,7 @@ Can be used stand-alone or be easily integrated into a webpage or app.
 dice.py is a GAE serverlet that makes proxy requests to random.org API.
 
 CREDITS
+
 This app is derived from the work of Anton Natarov (aka Teal) found at http://www.teall.info/2014/01/online-3d-dice-roller.html and uses three.js and canon.js for the geometry and physics. It also grabs true random numbers (from atmospheric noise) from random.org.
 
 Sound Effect courtesy of http://commons.nicovideo.jp/material/nc93322
