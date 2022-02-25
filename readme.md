@@ -2,6 +2,7 @@
 
 My goal here is to make a truly satisfying dice roller. One that's the next best thing to rolling real dice. It rolls polyhedrons that actually have numbers on each face that you can see as they roll and bounce around the screen, with sound effects. Supports d4, d6, d8, d10, d12, d20, and d100 plus modifiers.
 
+
 TECHNICAL
 
 To run open dice/index.html with your browser.
@@ -9,6 +10,7 @@ To run open dice/index.html with your browser.
 Can be used stand-alone or be easily integrated into a webpage or app.
 
 dice.py is a GAE serverlet that makes proxy requests to random.org API.
+
 
 CREDITS
 
