@@ -299,7 +299,7 @@
     }
 
     this.create_d6 = function() {
-        if (!this.d6_geometry) this.d6_geometry = this.create_d6_geometry(this.scale * 1.2);
+        if (!this.d6_geometry) this.d6_geometry = this.create_d6_geometry(this.scale * 1.1);
         if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
                 this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 0.9));
         return new THREE.Mesh(this.d6_geometry, this.dice_material);
@@ -308,7 +308,7 @@
     this.create_d8 = function() {
         if (!this.d8_geometry) this.d8_geometry = this.create_d8_geometry(this.scale);
         if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.2));
+                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.4));
         return new THREE.Mesh(this.d8_geometry, this.dice_material);
     }
 
@@ -329,7 +329,7 @@
     this.create_d20 = function() {
         if (!this.d20_geometry) this.d20_geometry = this.create_d20_geometry(this.scale);
         if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.0));
+                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.2));
         return new THREE.Mesh(this.d20_geometry, this.dice_material);
     }
 
@@ -456,7 +456,7 @@
             this.h = this.ch;
         }
         this.aspect = Math.min(this.cw / this.w, this.ch / this.h);
-        that.scale = Math.sqrt(this.w * this.w + this.h * this.h) / 10;
+        that.scale = Math.sqrt(this.w * this.w + this.h * this.h) / 8;
         //console.log('scale = ' + that.scale);
 
         this.renderer.setSize(this.cw * 2, this.ch * 2);
@@ -584,7 +584,7 @@
                 closest_face = face;
             }
         }
-        var matindex = closest_face.materialIndex - 1;
+        var matindex = closest_face ? closest_face.materialIndex - 1 : -1; //todo: bug thrown here, sometimes closest_face = undefined
         if (dice.dice_type == 'd100') matindex *= 10;
         if (dice.dice_type == 'd10' && matindex == 0) matindex = 10;
         return matindex;
@@ -789,7 +789,7 @@
         $t.bind(container, ['mouseup', 'touchend'], function(ev) {
             if (box.rolling) return;
             if (box.mouse_start == undefined) return;
-            ev.stopPropagation();
+            //ev.stopPropagation();
             var m = $t.get_mouse_coords(ev);
             var vector = { x: m.x - box.mouse_start.x, y: -(m.y - box.mouse_start.y) };
             box.mouse_start = undefined;

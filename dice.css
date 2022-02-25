@@ -30,8 +30,7 @@
     font-size: 26pt;
     border: none;
     color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(100,100,100,0.1);
-    width: 100%;
+    background-color: rgba(140,140,140,0.4);
     max-width: 100%;
     text-overflow: ellipsis;
     padding: 0.2em;
@@ -62,14 +61,13 @@
     width: 100%;
 }
 
-#selector_div button {
+#selector_div p {
     font-size: 20pt;
     color: rgb(255, 255, 255);
-    background-color: rgba(0, 0, 0, 0.6);
-    cursor: pointer;
-    border: none;
-    width: 5em;
+    background: none;
+    margin: auto;
     top: 35%;
+    padding: 1em;
 }
 
 .bottom_field {

@@ -12,8 +12,9 @@ function dice_initialize() {
 
     $t.dice.use_true_random = false; //set to false for local dev
 
-    $t.bind(set, 'input', function(ev) { show_selector(); });
-    $t.bind(set, 'blur', function(ev) { show_selector(); });
+    set.size = set.value.length;
+    $t.bind(set, 'change', function(ev) { show_selector(); });
+    $t.bind(set, 'input', function(ev) { set.size = set.value.length; });
 
     var box = new $t.dice.dice_box(canvas);
     box.animate_selector = false;
@@ -25,13 +26,12 @@ function dice_initialize() {
     });
 
     box.bind_mouse(center_div, notation_getter, before_roll, after_roll);
-    box.bind_throw($t.id('throw'), notation_getter, before_roll, after_roll);
 
     $t.bind(container, ['mouseup', 'touchend'], function(ev) {
-        ev.stopPropagation();
+        //ev.stopPropagation();
         if (selector_div.style.display == 'none') {
             if (!box.rolling) show_selector();
-            box.rolling = false;
+            //box.rolling = false;
             return;
         }
     });
@@ -52,6 +52,7 @@ function dice_initialize() {
 
     function before_roll(vectors, notation, callback) {
         selector_div.style.display = 'none';
+        label.innerHTML = '';
         let numDice = notation.set.length;
         for(let i = 0; i < numDice; i++) {
             let volume = i/10;
@@ -73,8 +74,12 @@ function dice_initialize() {
         }
         if (result.length > 1) res += ' = ' + 
                 (result.reduce(function(s, a) { return s + a; }) + notation.constant);
-        label.innerHTML = res;
-        //console.log('result: ' + res);
+        if(res < 0) {
+            label.innerHTML = "Oops, your dice fell off the table. Roll again."
+        } else {
+            label.innerHTML = res;
+        }
+        console.log('result: ' + res);
     }
 
     //playSound function and audio file copied from 
