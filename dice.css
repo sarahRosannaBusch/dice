@@ -19,10 +19,10 @@
 /* ****************************** */
 
 .top_field {
-    height: 2em;
     text-align: center;
     width: 100%;
     padding: 5px;
+    background-color: rgba(150,150,150,0.1);
 }
 
 #set { /* text input */
@@ -73,7 +73,7 @@
 .bottom_field {
     position: absolute;
     text-align: center;
-    bottom: 15px;
+    bottom: 5px;
     width: inherit;
     padding: 0px;
 }
@@ -81,8 +81,8 @@
 #label {
     font-size: 32pt;
     word-spacing: 0.5em;
-    color: rgba(255,255,255,0.6);
-    background: rgba(0, 0, 0, 0.6);
+    color: rgba(255,255,255,0.8);
+    background: rgba(0, 0, 0, 0.2);
     padding: 0.25em;
     padding-top: 0.1em;
 }

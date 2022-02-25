@@ -82,7 +82,7 @@ function dice_initialize() {
         } else {
             label.innerHTML = res;
         }
-        label.style.display = 'inline-block';
+        label.style.display = 'block';
         console.log('result: ' + res);
     }
 
