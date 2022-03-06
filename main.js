@@ -3,25 +3,22 @@
 function dice_initialize() {
     let container = $t.id('diceRoller');
     var canvas = $t.id('canvas');
-    canvas.style.width = container.offsetWidth - 1 + 'px';
-    canvas.style.height = container.offsetHeight - 1 + 'px';
     var label = $t.id('label');
     var set = $t.id('set'); //input field
     var selector_div = $t.id('selector_div');
     var center_div = $t.id('center_div');
 
-    $t.dice.use_true_random = false; //set to false for local dev
-
-    set.size = set.value.length;
-    $t.bind(set, 'change', function(ev) { show_selector(); });
-    $t.bind(set, 'input', function(ev) { set.size = set.value.length; });
+    set.size = set.value.length; //so input field is only as wide as its contents
+    $t.bind(set, 'change', function(ev) { show_selector(); }); //shows instructions
+    $t.bind(set, 'input', function(ev) { 
+        let size = set.value.length;
+        set.size = size > 0 ? size : 1;
+    });
 
     var box = new $t.dice.dice_box(canvas);
-    box.animate_selector = false;
 
     $t.bind(window, 'resize', function() {
-        canvas.style.width = container.offsetWidth - 1 + 'px';
-        canvas.style.height = container.offsetHeight - 1 + 'px';
+        //todo: this doesn't work :(
         box.reinit(canvas);
     });
 
@@ -46,7 +43,7 @@ function dice_initialize() {
     function notation_getter() {
         let diceToRoll = set.value;
         let result = $t.dice.parse_notation(diceToRoll);
-        //console.log('notation_getter got: ' + JSON.stringify(result));
+        console.log('notation_getter got: ' + JSON.stringify(result));
         return result;
     }
 
@@ -55,6 +52,7 @@ function dice_initialize() {
         label.innerHTML = '';
         label.style.display = 'none';
         let numDice = notation.set.length;
+        numDice = numDice > 10 ? 10 : numDice;
         for(let i = 0; i < numDice; i++) {
             let volume = i/10;
             if(volume <= 0) volume = 0.1;

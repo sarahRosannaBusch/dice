@@ -1,9 +1,32 @@
+* {
+    box-sizing: border-box; /* padding and border are included in total width/height of all elements */
+    margin: 0px;
+}
+
+body {
+    font-family: Georgia;
+    margin: 0;
+    /* overflow: hidden;     */
+    background: #202020;
+    background-image: url("assets/background.svg");
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: cover;
+    height: 100vh;
+    width: 100vw;
+}
+
 #diceRoller {
     position: absolute;
     top: 0;
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
     z-index:-1;
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
 }
 
 #diceRollerUI {
@@ -46,6 +69,7 @@
     text-align: center;
     height: 100%;
     width: 100%;
+    z-index: 100;
 }
 
 .center_field * {
