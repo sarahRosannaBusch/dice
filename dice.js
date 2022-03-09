@@ -3,7 +3,7 @@
 /**
  * @brief generates polyhedral dice with roll animation and result calculation
  * @author Anton Natarov aka Teal (original author)
- * @author Sarah Rosanna Busch (modifications)
+ * @author Sarah Rosanna Busch (refactor, see changelog)
  * @date 4 March 2022
  * @dependecies teal.js, cannon.js, three.js
  */

@@ -1,63 +1,75 @@
 "use strict";
 
-function dice_initialize() {
-    let container = $t.id('diceRoller');
-    var canvas = $t.id('canvas');
-    var label = $t.id('label');
-    var set = $t.id('set'); //input field
-    var selector_div = $t.id('selector_div');
-    var center_div = $t.id('center_div');
+/** @brief 3d dice roller web app
+ *  @author Sarah Rosanna Busch
+ *  @date 8 March 2022
+ */
 
-    set.size = set.value.length; //so input field is only as wide as its contents
-    $t.bind(set, 'change', function(ev) { show_selector(); }); //shows instructions
-    $t.bind(set, 'input', function(ev) { 
-        let size = set.value.length;
-        set.size = size > 0 ? size : 1;
-    });
+ var main = (function() {
+    var that = {}; 
+    var vars = {}; 
+    var elem = {}; 
 
-    var box = new $t.dice.dice_box(canvas);
+    that.init = function() {
+        elem.container = $t.id('diceRoller');
+        elem.canvas = $t.id('canvas');
+        elem.result = $t.id('result');
+        elem.textInput = $t.id('textInput'); 
+        elem.instructions = $t.id('instructions');
+        elem.center_div = $t.id('center_div');
 
-    $t.bind(window, 'resize', function() {
-        //todo: this doesn't work :(
-        box.reinit(canvas);
-    });
+        elem.textInput.size = elem.textInput.value.length; //so input field is only as wide as its contents
+        $t.bind(elem.textInput, 'change', function(ev) { show_instructions(); }); //shows instructions
+        $t.bind(elem.textInput, 'input', function(ev) { 
+            let size = elem.textInput.value.length;
+            elem.textInput.size = size > 0 ? size : 1;
+        });
 
-    box.bind_mouse(center_div, notation_getter, before_roll, after_roll);
+        var box = new $t.dice.dice_box(elem.canvas);
 
-    $t.bind(container, ['mouseup', 'touchend'], function(ev) {
-        //ev.stopPropagation();
-        if (selector_div.style.display == 'none') {
-            if (!box.rolling) show_selector();
-            //box.rolling = false;
-            return;
-        }
-    });
+        $t.bind(window, 'resize', function() {
+            //todo: this doesn't work :(
+            box.reinit(elem.canvas);
+        });
 
-    show_selector();
+        //binds swipe to center_div
+        box.bind_mouse(elem.center_div, notation_getter, before_roll, after_roll);
+
+        $t.bind(elem.container, ['mouseup', 'touchend'], function(ev) {
+            //ev.stopPropagation();
+            if (elem.instructions.style.display == 'none') {
+                if (!box.rolling) show_instructions();
+                //box.rolling = false;
+                return;
+            }
+        });
+
+        show_instructions();
+    }
 
     // show 'Roll Dice' button
-    function show_selector() {
-        selector_div.style.display = 'inline-block';
+    function show_instructions() {
+        elem.instructions.style.display = 'inline-block';
     }
 
     function notation_getter() {
-        let diceToRoll = set.value;
+        let diceToRoll = textInput.value;
         let result = $t.dice.parse_notation(diceToRoll);
         console.log('notation_getter got: ' + JSON.stringify(result));
         return result;
     }
 
     function before_roll(vectors, notation, callback) {
-        selector_div.style.display = 'none';
-        label.innerHTML = '';
-        label.style.display = 'none';
+        elem.instructions.style.display = 'none';
+        elem.result.innerHTML = '';
+        elem.result.style.display = 'none';
         let numDice = notation.set.length;
         numDice = numDice > 10 ? 10 : numDice;
         for(let i = 0; i < numDice; i++) {
             let volume = i/10;
             if(volume <= 0) volume = 0.1;
             if(volume > 1) volume = 1;
-            playSound(container, volume);
+            playSound(elem.container, volume);
         }
         // do here rpc call or whatever to get your own result of throw.
         // then callback with array of your result, example:
@@ -76,11 +88,11 @@ function dice_initialize() {
         if (result.length > 1 || notation.constant) res += ' = ' + 
                 (result.reduce(function(s, a) { return s + a; }) + notation.constant);
         if(result[0] < 0) {
-            label.innerHTML = "Oops, your dice fell off the table. Refresh and roll again."
+            elem.result.innerHTML = "Oops, your dice fell off the table. Refresh and roll again."
         } else {
-            label.innerHTML = res;
+            elem.result.innerHTML = res;
         }
-        label.style.display = 'block';
+        elem.result.style.display = 'block';
         console.log('result: ' + res);
     }
 
@@ -97,4 +109,6 @@ function dice_initialize() {
           audio.remove();
         };
     }
-}
+
+    return that;
+}());
