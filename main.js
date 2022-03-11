@@ -33,15 +33,9 @@
         });
 
         //binds swipe to center_div
-        box.bind_mouse(elem.center_div, notation_getter, before_roll, after_roll);
-
-        $t.bind(elem.container, ['mouseup', 'touchend'], function(ev) {
-            //ev.stopPropagation();
-            if (elem.instructions.style.display == 'none') {
-                if (!box.rolling) show_instructions();
-                //box.rolling = false;
-                return;
-            }
+        $t.bind(elem.center_div, ['mouseup', 'touchend'], function(ev) {
+            if (box.rolling) return;
+            box.start_throw(notation_getter, before_roll, after_roll);
         });
 
         show_instructions();
@@ -59,7 +53,7 @@
         return result;
     }
 
-    function before_roll(vectors, notation, callback) {
+    function before_roll(notation, callback) {
         elem.instructions.style.display = 'none';
         elem.result.innerHTML = '';
         elem.result.style.display = 'none';
@@ -71,10 +65,9 @@
             if(volume > 1) volume = 1;
             playSound(elem.container, volume);
         }
-        // do here rpc call or whatever to get your own result of throw.
-        // then callback with array of your result, example:
-        // callback([2, 2, 2, 2]); // for 4d6 where all dice values are 2.
-        callback();
+        
+        //pass in array of results, when desired
+        callback(); 
     }
 
     function after_roll(notation, result) {

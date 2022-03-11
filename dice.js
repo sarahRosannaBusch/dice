@@ -4,8 +4,8 @@
  * @brief generates polyhedral dice with roll animation and result calculation
  * @author Anton Natarov aka Teal (original author)
  * @author Sarah Rosanna Busch (refactor, see changelog)
- * @date 4 March 2022
- * @dependecies teal.js, cannon.js, three.js
+ * @date 10 March 2022
+ * @dependencies teal.js, cannon.js, three.js
  */
 
 /**
@@ -13,13 +13,14 @@
  * - tweaked scaling to make dice look nice on mobile
  * - removed dice selector feature (separating UI from dice roller)
  * - file reorg (moving variable declarations to top, followed by public then private functions)
+ * - removing true random option (was cool but not worth the extra dependencies or complexity)
+ * - removing mouse event bindings (separating UI from dice roller)
+ * - removing redundant functions
  */
 
 (function(dice) {
 
     //variables
-    var random_storage = []; //stores random number
-    this.use_true_random = false; //default to offline mode
     this.frame_rate = 1 / 60;
     this.scale = 100; //dice size
     
@@ -171,33 +172,7 @@
 
         this.renderer.render(this.scene, this.camera);
     }
-    
-    //swipe a transparent overlay to roll dice
-    this.dice_box.prototype.bind_mouse = function(container, notation_getter, before_roll, after_roll) {
-        var box = this;
-        $t.bind(container, ['mousedown', 'touchstart'], function(ev) {
-            ev.preventDefault();
-            box.mouse_time = (new Date()).getTime();
-            box.mouse_start = $t.get_mouse_coords(ev);
-        });
-        $t.bind(container, ['mouseup', 'touchend'], function(ev) {
-            if (box.rolling) return;
-            if (box.mouse_start == undefined) return;
-            //ev.stopPropagation();
-            var m = $t.get_mouse_coords(ev);
-            var vector = { x: m.x - box.mouse_start.x, y: -(m.y - box.mouse_start.y) };
-            box.mouse_start = undefined;
-            var dist = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-            if (dist < Math.sqrt(box.w * box.h * 0.01)) return;
-            var time_int = (new Date()).getTime() - box.mouse_time;
-            if (time_int > 2000) time_int = 2000;
-            var boost = Math.sqrt((2500 - time_int) / 2500) * dist * 2;
-            prepare_rnd(function() {
-                throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll);
-            });
-        });
-    }
-    
+       
     this.dice_box.prototype.generate_vectors = function(notation, vector, boost) {
         var vectors = [];
         for (var i in notation.set) {
@@ -361,23 +336,15 @@
         if (intersects.length) return intersects[0].object.userData;
     }
 
-    this.dice_box.prototype.bind_throw = function(button, notation_getter, before_roll, after_roll) {
-        var box = this;
-        $t.bind(button, ['mouseup', 'touchend'], function(ev) {
-            ev.stopPropagation();
-            box.start_throw(notation_getter, before_roll, after_roll);
-        });
-    }
-
+    //call this to roll dice
     this.dice_box.prototype.start_throw = function(notation_getter, before_roll, after_roll) {
         var box = this;
         if (box.rolling) return;
-        prepare_rnd(function() {
-            var vector = { x: (rnd() * 2 - 1) * box.w, y: -(rnd() * 2 - 1) * box.h };
-            var dist = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-            var boost = (rnd() + 3) * dist;
-            throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll);
-        });
+
+        var vector = { x: (rnd() * 2 - 1) * box.w, y: -(rnd() * 2 - 1) * box.h };
+        var dist = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+        var boost = (rnd() + 3) * dist;
+        throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll);
     }
 
 
@@ -591,25 +558,33 @@
 
     // PRIVATE
 
-    function prepare_rnd(callback) {
-        if (!random_storage.length && $t.dice.use_true_random) {
-            try {
-                $t.rpc({ method: "random", n: 512 }, 
-                function(random_responce) {
-                    if (!random_responce.error)
-                        random_storage = random_responce.result.random.data;
-                    else $t.dice.use_true_random = false;
-                    callback();
+    function throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll) {
+        var uat = $t.dice.use_adapvite_timestep;
+        vector.x /= dist; vector.y /= dist;
+        var notation = notation_getter.call(box);
+        if (notation.set.length == 0) return;
+        //TODO: how do large numbers of vectors affect performance?
+        var vectors = box.generate_vectors(notation, vector, boost);
+        box.rolling = true;
+        if (before_roll) before_roll.call(box, notation, roll);
+        else roll();
+
+        //@param request_results (optional) - pass in an array of desired roll results
+        //todo: when this param is used, animation isn't as smooth (uat not used?)
+        function roll(request_results) {
+            if (after_roll) {
+                box.clear();
+                box.roll(vectors, request_results || notation.result, function(result) {
+                    if (after_roll) after_roll.call(box, notation, result);
+                    box.rolling = false;
+                    $t.dice.use_adapvite_timestep = uat;
                 });
-                return;
             }
-            catch (e) { $t.dice.use_true_random = false; }
         }
-        callback();
     }
 
     function rnd() {
-        return random_storage.length ? random_storage.pop() : Math.random();
+        return Math.random();
     }
 
     function create_shape(vertices, faces, radius) {
@@ -784,28 +759,6 @@
                     that.create_d4_materials(that.scale / 2, that.scale * 2, d4_labels[num]));
         }
         dice.geometry = geom;
-    }
-
-    function throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll) {
-        var uat = $t.dice.use_adapvite_timestep;
-        function roll(request_results) {
-            if (after_roll) {
-                box.clear();
-                box.roll(vectors, request_results || notation.result, function(result) {
-                    if (after_roll) after_roll.call(box, notation, result);
-                    box.rolling = false;
-                    $t.dice.use_adapvite_timestep = uat;
-                });
-            }
-        }
-        vector.x /= dist; vector.y /= dist;
-        var notation = notation_getter.call(box);
-        if (notation.set.length == 0) return;
-        //TODO: how do large numbers of vectors affect performance?
-        var vectors = box.generate_vectors(notation, vector, boost);
-        box.rolling = true;
-        if (before_roll) before_roll.call(box, vectors, notation, roll);
-        else roll();
     }
 
 }).apply(teal.dice = teal.dice || {});

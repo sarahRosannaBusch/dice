@@ -79,6 +79,7 @@ body {
     font-family: Trebuchet MS;
     background-color: rgba(255, 255, 255, 0.6);
     padding: 5px 15px;
+    user-select: none;
 }
 
 #instructions {
