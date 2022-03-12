@@ -15,7 +15,6 @@
  * - file reorg (moving variable declarations to top, followed by public then private functions)
  * - removing true random option (was cool but not worth the extra dependencies or complexity)
  * - removing mouse event bindings (separating UI from dice roller)
- * - removing redundant functions
  */
 
 (function(dice) {
@@ -336,7 +335,7 @@
         if (intersects.length) return intersects[0].object.userData;
     }
 
-    //call this to roll dice
+    //call this to roll dice programatically or from click
     this.dice_box.prototype.start_throw = function(notation_getter, before_roll, after_roll) {
         var box = this;
         if (box.rolling) return;
@@ -347,6 +346,43 @@
         throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll);
     }
 
+    //call this to roll dice from swipe (will throw dice in direction swiped)
+    this.dice_box.prototype.throw_dices = function(ev, notation_getter, before_roll, after_roll) {
+        var uat = $t.dice.use_adapvite_timestep;
+        var box = this;
+
+        if (box.mouse_start == undefined) return;
+        var m = $t.get_mouse_coords(ev);
+        var vector = { x: m.x - box.mouse_start.x, y: -(m.y - box.mouse_start.y) };
+        box.mouse_start = undefined;
+        var dist = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+        if (dist < Math.sqrt(box.w * box.h * 0.01)) return;
+        var time_int = (new Date()).getTime() - box.mouse_time;
+        if (time_int > 2000) time_int = 2000;
+        var boost = Math.sqrt((2500 - time_int) / 2500) * dist * 2;
+
+        vector.x /= dist; vector.y /= dist;
+        var notation = notation_getter.call(box);
+        if (notation.set.length == 0) return;
+        //TODO: how do large numbers of vectors affect performance?
+        var vectors = box.generate_vectors(notation, vector, boost);
+        box.rolling = true;
+        if (before_roll) before_roll.call(box, notation, roll);
+        else roll();
+
+        //@param request_results (optional) - pass in an array of desired roll results
+        //todo: when this param is used, animation isn't as smooth (uat not used?)
+        function roll(request_results) {
+            if (after_roll) {
+                box.clear();
+                box.roll(vectors, request_results || notation.result, function(result) {
+                    if (after_roll) after_roll.call(box, notation, result);
+                    box.rolling = false;
+                    $t.dice.use_adapvite_timestep = uat;
+                });
+            }
+        }
+    }
 
     // PUBLIC FUNCTIONS
 
@@ -557,31 +593,6 @@
 
 
     // PRIVATE
-
-    function throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll) {
-        var uat = $t.dice.use_adapvite_timestep;
-        vector.x /= dist; vector.y /= dist;
-        var notation = notation_getter.call(box);
-        if (notation.set.length == 0) return;
-        //TODO: how do large numbers of vectors affect performance?
-        var vectors = box.generate_vectors(notation, vector, boost);
-        box.rolling = true;
-        if (before_roll) before_roll.call(box, notation, roll);
-        else roll();
-
-        //@param request_results (optional) - pass in an array of desired roll results
-        //todo: when this param is used, animation isn't as smooth (uat not used?)
-        function roll(request_results) {
-            if (after_roll) {
-                box.clear();
-                box.roll(vectors, request_results || notation.result, function(result) {
-                    if (after_roll) after_roll.call(box, notation, result);
-                    box.rolling = false;
-                    $t.dice.use_adapvite_timestep = uat;
-                });
-            }
-        }
-    }
 
     function rnd() {
         return Math.random();

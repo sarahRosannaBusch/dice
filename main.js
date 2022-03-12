@@ -33,9 +33,14 @@
         });
 
         //binds swipe to center_div
+        $t.bind(elem.center_div, ['mousedown', 'touchstart'], function(ev) {
+            ev.preventDefault();
+            box.mouse_time = (new Date()).getTime();
+            box.mouse_start = $t.get_mouse_coords(ev);
+        });
         $t.bind(elem.center_div, ['mouseup', 'touchend'], function(ev) {
-            if (box.rolling) return;
-            box.start_throw(notation_getter, before_roll, after_roll);
+            if (box.rolling) return;            
+            box.throw_dices(ev, notation_getter, before_roll, after_roll);
         });
 
         show_instructions();
