@@ -26,22 +26,7 @@
         });
 
         var box = new $t.dice.dice_box(elem.canvas);
-
-        $t.bind(window, 'resize', function() {
-            //todo: this doesn't work :(
-            box.reinit(elem.canvas);
-        });
-
-        //binds swipe to center_div
-        $t.bind(elem.center_div, ['mousedown', 'touchstart'], function(ev) {
-            ev.preventDefault();
-            box.mouse_time = (new Date()).getTime();
-            box.mouse_start = $t.get_mouse_coords(ev);
-        });
-        $t.bind(elem.center_div, ['mouseup', 'touchend'], function(ev) {
-            if (box.rolling) return;            
-            box.throw_dices(ev, notation_getter, before_roll, after_roll);
-        });
+        box.bind_swipe(elem.center_div, notation_getter, before_roll, after_roll);
 
         show_instructions();
     }
