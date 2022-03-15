@@ -4,7 +4,7 @@
  * @brief generates polyhedral dice with roll animation and result calculation
  * @author Anton Natarov aka Teal (original author)
  * @author Sarah Rosanna Busch (refactor, see changelog)
- * @date 10 March 2022
+ * @date 14 March 2022
  * @dependencies teal.js, cannon.js, three.js
  */
 
@@ -15,59 +15,62 @@
  * - file reorg (moving variable declarations to top, followed by public then private functions)
  * - removing true random option (was cool but not worth the extra dependencies or complexity)
  * - removing mouse event bindings (separating UI from dice roller)
+ * - refactoring to module pattern and reducing publically available properties/methods
+ * - removing dice notation getter callback in favour of setting dice to roll directly
  */
 
-(function(dice) {
+const DICE = (function() {
+    var that = {};
 
-    //variables
-    this.frame_rate = 1 / 60;
-    this.scale = 100; //dice size
-    
-    this.material_options = {
-        specular: 0x172022,
-        color: 0xf0f0f0,
-        shininess: 40,
-        shading: THREE.FlatShading,
-    };
-    this.label_color = '#aaaaaa'; //numbers on dice
-    this.dice_color = '#202020';
-    this.ambient_light_color = 0xf0f0f0;
-    this.spot_light_color = 0xefefef;
-    this.desk_color = '#101010'; //canvas background, opacity set in reinit()
-    this.use_shadows = true;
+    var vars = { //todo: make these configurable on init
+        frame_rate: 1 / 60,
+        scale: 100, //dice size
+        
+        material_options: {
+            specular: 0x172022,
+            color: 0xf0f0f0,
+            shininess: 40,
+            shading: THREE.FlatShading,
+        },
+        label_color: '#aaaaaa', //numbers on dice
+        dice_color: '#202020',
+        ambient_light_color: 0xf0f0f0,
+        spot_light_color: 0xefefef,
+        desk_color: '#101010', //canvas background, opacity set in reinit()
+        use_shadows: true,
+        use_adapvite_timestep: true //todo: setting this to false improves performace a lot. but the dice rolls don't look as natural...
 
-    //constants
-    this.known_types = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];
-    this.dice_face_range = { 'd4': [1, 4], 'd6': [1, 6], 'd8': [1, 8], 'd10': [0, 9], 
-        'd12': [1, 12], 'd20': [1, 20], 'd100': [0, 9] };
-    this.dice_mass = { 'd4': 300, 'd6': 300, 'd8': 340, 'd10': 350, 'd12': 350, 'd20': 400, 'd100': 350 };
-    this.dice_inertia = { 'd4': 5, 'd6': 13, 'd8': 10, 'd10': 9, 'd12': 8, 'd20': 6, 'd100': 9 };
-    
-    this.standart_d20_dice_face_labels = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8',
-            '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
-    this.standart_d100_dice_face_labels = [' ', '00', '10', '20', '30', '40', '50',
-            '60', '70', '80', '90'];
-            
-    var d4_labels = [
-        [[], [0, 0, 0], [2, 4, 3], [1, 3, 4], [2, 1, 4], [1, 2, 3]],
-        [[], [0, 0, 0], [2, 3, 4], [3, 1, 4], [2, 4, 1], [3, 2, 1]],
-        [[], [0, 0, 0], [4, 3, 2], [3, 4, 1], [4, 2, 1], [3, 1, 2]],
-        [[], [0, 0, 0], [4, 2, 3], [1, 4, 3], [4, 1, 2], [1, 3, 2]]
-    ];
+    }
 
-    var that = this; //gets bound to teal's lib, so call with $t.dice.whatever
+    const CONSTS = {
+        known_types: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'],
+        dice_face_range: { 'd4': [1, 4], 'd6': [1, 6], 'd8': [1, 8], 'd10': [0, 9],
+            'd12': [1, 12], 'd20': [1, 20], 'd100': [0, 9] },
+        dice_mass: { 'd4': 300, 'd6': 300, 'd8': 340, 'd10': 350, 'd12': 350, 'd20': 400, 'd100': 350 },
+        dice_inertia: { 'd4': 5, 'd6': 13, 'd8': 10, 'd10': 9, 'd12': 8, 'd20': 6, 'd100': 9 },
+        
+        standart_d20_dice_face_labels: [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8',
+                '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
+        standart_d100_dice_face_labels: [' ', '00', '10', '20', '30', '40', '50',
+                '60', '70', '80', '90'],
+                
+        d4_labels: [
+            [[], [0, 0, 0], [2, 4, 3], [1, 3, 4], [2, 1, 4], [1, 2, 3]],
+            [[], [0, 0, 0], [2, 3, 4], [3, 1, 4], [2, 4, 1], [3, 2, 1]],
+            [[], [0, 0, 0], [4, 3, 2], [3, 4, 1], [4, 2, 1], [3, 1, 2]],
+            [[], [0, 0, 0], [4, 2, 3], [1, 4, 3], [4, 1, 2], [1, 3, 2]]
+        ]
+    }
 
     // DICE BOX OBJECT
 
     // @brief constructor; create a new instance of this to initialize the canvas
-    // @param container = <div id='canvas'> (canvas elem will be created within it)
-    // @param dimentions (optional) = {w: X, h: Y} in px (default is fit to container)
-    this.dice_box = function(container, dimentions) {
-        this.use_adapvite_timestep = true; //todo: setting this to false improves performace a lot. but the dice rolls don't look as natural...
-
+    // @param container element to contain canvas; canvas will fill container
+    that.dice_box = function(container) {
         this.dices = [];
         this.scene = new THREE.Scene();
         this.world = new CANNON.World();
+        this.diceToRoll = ''; //user input
 
         this.renderer = window.WebGLRenderingContext
             ? new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -77,7 +80,7 @@
         this.renderer.shadowMap.type = THREE.PCFShadowMap;
         this.renderer.setClearColor(0xffffff, 0); //color, alpha
 
-        this.reinit(container, dimentions);
+        this.reinit(container);
         $t.bind(container, 'resize', function() {
             //todo: this doesn't work :(
             this.reinit(elem.canvas);
@@ -87,7 +90,7 @@
         this.world.broadphase = new CANNON.NaiveBroadphase();
         this.world.solver.iterations = 16;
 
-        var ambientLight = new THREE.AmbientLight(that.ambient_light_color);
+        var ambientLight = new THREE.AmbientLight(vars.ambient_light_color);
         this.scene.add(ambientLight);
 
         this.dice_body_material = new CANNON.Material();
@@ -128,21 +131,15 @@
         this.renderer.render(this.scene, this.camera);
     }
 
-    // call on window resize
-    this.dice_box.prototype.reinit = function(container, dimentions) {
+    // called on init and window resize
+    that.dice_box.prototype.reinit = function(container) {
         this.cw = container.clientWidth / 2;
         this.ch = container.clientHeight / 2;
-        if (dimentions) {
-            this.w = dimentions.w;
-            this.h = dimentions.h;
-        }
-        else {
-            this.w = this.cw;
-            this.h = this.ch;
-        }
+        this.w = this.cw;
+        this.h = this.ch;
         this.aspect = Math.min(this.cw / this.w, this.ch / this.h);
-        that.scale = Math.sqrt(this.w * this.w + this.h * this.h) / 8;
-        //console.log('scale = ' + that.scale);
+        vars.scale = Math.sqrt(this.w * this.w + this.h * this.h) / 8;
+        //console.log('scale = ' + vars.scale);
 
         this.renderer.setSize(this.cw * 2, this.ch * 2);
 
@@ -153,7 +150,7 @@
 
         var mw = Math.max(this.w, this.h);
         if (this.light) this.scene.remove(this.light);
-        this.light = new THREE.SpotLight(that.spot_light_color, 2.0);
+        this.light = new THREE.SpotLight(vars.spot_light_color, 2.0);
         this.light.position.set(-mw / 2, mw / 2, mw * 2);
         this.light.target.position.set(0, 0, 0);
         this.light.distance = mw * 5;
@@ -169,26 +166,31 @@
 
         if (this.desk) this.scene.remove(this.desk);
         this.desk = new THREE.Mesh(new THREE.PlaneGeometry(this.w * 2, this.h * 2, 1, 1), 
-                new THREE.MeshPhongMaterial({ color: that.desk_color, opacity: 0.5, transparent: true }));
-        this.desk.receiveShadow = that.use_shadows;
+                new THREE.MeshPhongMaterial({ color: vars.desk_color, opacity: 0.5, transparent: true }));
+        this.desk.receiveShadow = vars.use_shadows;
         this.scene.add(this.desk); 
 
         this.renderer.render(this.scene, this.camera);
     }
 
+    // @param diceToRoll (string), ex: "1d100+1d10+1d4+1d6+1d8+1d12+1d20"
+    that.dice_box.prototype.setDice = function(diceToRoll) {
+        this.diceToRoll = diceToRoll;
+    }
+
     //call this to roll dice programatically or from click
-    this.dice_box.prototype.start_throw = function(notation_getter, before_roll, after_roll) {
+    that.dice_box.prototype.start_throw = function(before_roll, after_roll) {
         var box = this;
         if (box.rolling) return;
 
         var vector = { x: (rnd() * 2 - 1) * box.w, y: -(rnd() * 2 - 1) * box.h };
         var dist = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
         var boost = (rnd() + 3) * dist;
-        throw_dices(box, vector, boost, dist, notation_getter, before_roll, after_roll);
+        throw_dices(box, vector, boost, dist, before_roll, after_roll);
     }
 
-    //binds swipe to container
-    this.dice_box.prototype.bind_swipe = function(container, notation_getter, before_roll, after_roll) {
+    //call this to roll dice from swipe (will throw dice in direction swiped)
+    that.dice_box.prototype.bind_swipe = function(container, before_roll, after_roll) {
         let box = this;
         $t.bind(container, ['mousedown', 'touchstart'], function(ev) {
             ev.preventDefault();
@@ -196,28 +198,25 @@
             box.mouse_start = $t.get_mouse_coords(ev);
         });
         $t.bind(container, ['mouseup', 'touchend'], function(ev) {
-            if (box.rolling) return;            
-            box.throw_dices(ev, notation_getter, before_roll, after_roll);
+            if (box.rolling) return; 
+            if (box.mouse_start == undefined) return;
+            var m = $t.get_mouse_coords(ev);
+            var vector = { x: m.x - box.mouse_start.x, y: -(m.y - box.mouse_start.y) };
+            box.mouse_start = undefined;
+            var dist = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+            if (dist < Math.sqrt(box.w * box.h * 0.01)) return;
+            var time_int = (new Date()).getTime() - box.mouse_time;
+            if (time_int > 2000) time_int = 2000;
+            var boost = Math.sqrt((2500 - time_int) / 2500) * dist * 2;           
+            throw_dices(box, vector, boost, dist, before_roll, after_roll);
         });
     }
 
-    //call this to roll dice from swipe (will throw dice in direction swiped)
-    this.dice_box.prototype.throw_dices = function(ev, notation_getter, before_roll, after_roll) {
-        var uat = $t.dice.use_adapvite_timestep;
-        var box = this;
-
-        if (box.mouse_start == undefined) return;
-        var m = $t.get_mouse_coords(ev);
-        var vector = { x: m.x - box.mouse_start.x, y: -(m.y - box.mouse_start.y) };
-        box.mouse_start = undefined;
-        var dist = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-        if (dist < Math.sqrt(box.w * box.h * 0.01)) return;
-        var time_int = (new Date()).getTime() - box.mouse_time;
-        if (time_int > 2000) time_int = 2000;
-        var boost = Math.sqrt((2500 - time_int) / 2500) * dist * 2;
+    function throw_dices(box, vector, boost, dist, before_roll, after_roll) {
+        var uat = vars.use_adapvite_timestep;
 
         vector.x /= dist; vector.y /= dist;
-        var notation = notation_getter.call(box);
+        var notation = that.parse_notation(box.diceToRoll);
         if (notation.set.length == 0) return;
         //TODO: how do large numbers of vectors affect performance?
         var vectors = box.generate_vectors(notation, vector, boost);
@@ -233,13 +232,14 @@
                 box.roll(vectors, request_results || notation.result, function(result) {
                     if (after_roll) after_roll.call(box, notation, result);
                     box.rolling = false;
-                    $t.dice.use_adapvite_timestep = uat;
+                    vars.use_adapvite_timestep = uat;
                 });
             }
         }
     }
        
-    this.dice_box.prototype.generate_vectors = function(notation, vector, boost) {
+    //todo: the rest of these don't need to be public, but need to read the this properties
+    that.dice_box.prototype.generate_vectors = function(notation, vector, boost) {
         var vectors = [];
         for (var i in notation.set) {
             var vec = make_random_vector(vector);
@@ -252,7 +252,7 @@
             if (projector > 1.0) pos.y /= projector; else pos.x *= projector;
             var velvec = make_random_vector(vector);
             var velocity = { x: velvec.x * boost, y: velvec.y * boost, z: -10 };
-            var inertia = that.dice_inertia[notation.set[i]];
+            var inertia = CONSTS.dice_inertia[notation.set[i]];
             var angle = {
                 x: -(rnd() * vec.y * 5 + inertia * vec.y),
                 y: rnd() * vec.x * 5 + inertia * vec.x,
@@ -264,11 +264,11 @@
         return vectors;
     }
 
-    this.dice_box.prototype.create_dice = function(type, pos, velocity, angle, axis) {
-        var dice = that['create_' + type]();
+    that.dice_box.prototype.create_dice = function(type, pos, velocity, angle, axis) {
+        var dice = threeD_dice['create_' + type]();
         dice.castShadow = true;
         dice.dice_type = type;
-        dice.body = new CANNON.RigidBody(that.dice_mass[type],
+        dice.body = new CANNON.RigidBody(CONSTS.dice_mass[type],
                 dice.geometry.cannon_shape, this.dice_body_material);
         dice.body.position.set(pos.x, pos.y, pos.z);
         dice.body.quaternion.setFromAxisAngle(new CANNON.Vec3(axis.x, axis.y, axis.z), axis.a * Math.PI * 2);
@@ -281,10 +281,10 @@
         this.world.add(dice.body);
     }
 
-    this.dice_box.prototype.check_if_throw_finished = function() {
+    that.dice_box.prototype.check_if_throw_finished = function() {
         var res = true;
         var e = 6;
-        if (this.iteration < 10 / that.frame_rate) {
+        if (this.iteration < 10 / vars.frame_rate) {
             for (var i = 0; i < this.dices.length; ++i) {
                 var dice = this.dices[i];
                 if (dice.dice_stopped === true) continue;
@@ -309,28 +309,28 @@
         return res;
     }
 
-    this.dice_box.prototype.emulate_throw = function() {
+    that.dice_box.prototype.emulate_throw = function() {
         while (!this.check_if_throw_finished()) {
             ++this.iteration;
-            this.world.step(that.frame_rate);
+            this.world.step(vars.frame_rate);
         }
         return get_dice_values(this.dices);
     }
 
-    this.dice_box.prototype.__animate = function(threadid) {
+    that.dice_box.prototype.__animate = function(threadid) {
         var time = (new Date()).getTime();
         var time_diff = (time - this.last_time) / 1000;
-        if (time_diff > 3) time_diff = that.frame_rate;
+        if (time_diff > 3) time_diff = vars.frame_rate;
         ++this.iteration;
-        if (this.use_adapvite_timestep) {
-            while (time_diff > that.frame_rate * 1.1) {
-                this.world.step(that.frame_rate);
-                time_diff -= that.frame_rate;
+        if (vars.use_adapvite_timestep) {
+            while (time_diff > vars.frame_rate * 1.1) {
+                this.world.step(vars.frame_rate);
+                time_diff -= vars.frame_rate;
             }
             this.world.step(time_diff);
         }
         else {
-            this.world.step(that.frame_rate);
+            this.world.step(vars.frame_rate);
         }
         for (var i in this.scene.children) {
             var interact = this.scene.children[i];
@@ -347,16 +347,16 @@
         }
         if (this.running == threadid) {
             (function(t, tid, uat) {
-                if (!uat && time_diff < that.frame_rate) {
+                if (!uat && time_diff < vars.frame_rate) {
                     setTimeout(function() { requestAnimationFrame(function() { t.__animate(tid); }); },
-                        (that.frame_rate - time_diff) * 1000);
+                        (vars.frame_rate - time_diff) * 1000);
                 }
                 else requestAnimationFrame(function() { t.__animate(tid); });
-            })(this, threadid, this.use_adapvite_timestep);
+            })(this, threadid, vars.use_adapvite_timestep);
         }
     }
 
-    this.dice_box.prototype.clear = function() {
+    that.dice_box.prototype.clear = function() {
         this.running = false;
         var dice;
         while (dice = this.dices.pop()) {
@@ -369,7 +369,7 @@
         setTimeout(function() { box.renderer.render(box.scene, box.camera); }, 100);
     }
 
-    this.dice_box.prototype.prepare_dices_for_roll = function(vectors) {
+    that.dice_box.prototype.prepare_dices_for_roll = function(vectors) {
         this.clear();
         this.iteration = 0;
         for (var i in vectors) {
@@ -378,10 +378,10 @@
         }
     }
 
-    this.dice_box.prototype.roll = function(vectors, values, callback) {
+    that.dice_box.prototype.roll = function(vectors, values, callback) {
         this.prepare_dices_for_roll(vectors);
         if (values != undefined && values.length) {
-            this.use_adapvite_timestep = false;
+            vars.use_adapvite_timestep = false;
             var res = this.emulate_throw();
             this.prepare_dices_for_roll(vectors);
             for (var i in res)
@@ -393,7 +393,7 @@
         this.__animate(this.running);
     }
 
-    this.dice_box.prototype.search_dice_by_mouse = function(ev) {
+    that.dice_box.prototype.search_dice_by_mouse = function(ev) {
         var m = $t.get_mouse_coords(ev);
         var intersects = (new THREE.Raycaster(this.camera.position, 
                     (new THREE.Vector3((m.x - this.cw) / this.aspect,
@@ -405,7 +405,7 @@
 
     // PUBLIC FUNCTIONS
 
-    this.parse_notation = function(notation) {
+    that.parse_notation = function(notation) {
         var no = notation.split('@');
         var dr0 = /\s*(\d*)([a-z]+)(\d+)(\s*(\+|\-)\s*(\d+)){0,1}\s*(\+|$)/gi;
         var dr1 = /(\b)*(\d+)(\b)*/gi;
@@ -417,7 +417,7 @@
             var count = parseInt(res[1]);
             if (res[1] == '') count = 1;
             var type = 'd' + res[3];
-            if (this.known_types.indexOf(type) == -1) { ret.error = true; continue; }
+            if (CONSTS.known_types.indexOf(type) == -1) { ret.error = true; continue; }
             while (count--) ret.set.push(type);
             if (res[5] && res[6]) {
                 if (res[5] == '+') ret.constant += parseInt(res[6]);
@@ -430,7 +430,7 @@
         return ret;
     }
 
-    this.stringify_notation = function(nn) {
+    that.stringify_notation = function(nn) {
         var dict = {}, notation = '';
         for (var i in nn.set) 
             if (!dict[nn.set[i]]) dict[nn.set[i]] = 1; else ++dict[nn.set[i]];
@@ -445,7 +445,61 @@
         return notation;
     }
     
-    this.create_dice_materials = function(face_labels, size, margin) {
+    // PRIVATE FUNCTIONS
+
+    // dice geometries
+    let threeD_dice = {};
+
+    threeD_dice.create_d4 = function() {
+        if (!this.d4_geometry) this.d4_geometry = create_d4_geometry(vars.scale * 1.2);
+        if (!this.d4_material) this.d4_material = new THREE.MeshFaceMaterial(
+                create_d4_materials(vars.scale / 2, vars.scale * 2, CONSTS.d4_labels[0]));
+        return new THREE.Mesh(this.d4_geometry, this.d4_material);
+    }
+
+    threeD_dice.create_d6 = function() {
+        if (!this.d6_geometry) this.d6_geometry = create_d6_geometry(vars.scale * 1.1);
+        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
+                create_dice_materials(CONSTS.standart_d20_dice_face_labels, vars.scale / 2, 0.9));
+        return new THREE.Mesh(this.d6_geometry, this.dice_material);
+    }
+
+    threeD_dice.create_d8 = function() {
+        if (!this.d8_geometry) this.d8_geometry = create_d8_geometry(vars.scale);
+        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
+                create_dice_materials(CONSTS.standart_d20_dice_face_labels, vars.scale / 2, 1.4));
+        return new THREE.Mesh(this.d8_geometry, this.dice_material);
+    }
+
+    threeD_dice.create_d10 = function() {
+        if (!this.d10_geometry) this.d10_geometry = create_d10_geometry(vars.scale * 0.9);
+        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
+                create_dice_materials(CONSTS.standart_d20_dice_face_labels, vars.scale / 2, 1.0));
+        return new THREE.Mesh(this.d10_geometry, this.dice_material);
+    }
+
+    threeD_dice.create_d12 = function() {
+        if (!this.d12_geometry) this.d12_geometry = create_d12_geometry(vars.scale * 0.9);
+        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
+                create_dice_materials(CONSTS.standart_d20_dice_face_labels, vars.scale / 2, 1.0));
+        return new THREE.Mesh(this.d12_geometry, this.dice_material);
+    }
+
+    threeD_dice.create_d20 = function() {
+        if (!this.d20_geometry) this.d20_geometry = create_d20_geometry(vars.scale);
+        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
+                create_dice_materials(CONSTS.standart_d20_dice_face_labels, vars.scale / 2, 1.2));
+        return new THREE.Mesh(this.d20_geometry, this.dice_material);
+    }
+
+    threeD_dice.create_d100 = function() {
+        if (!this.d10_geometry) this.d10_geometry = create_d10_geometry(vars.scale * 0.9);
+        if (!this.d100_material) this.d100_material = new THREE.MeshFaceMaterial(
+                create_dice_materials(CONSTS.standart_d100_dice_face_labels, vars.scale / 2, 1.5));
+        return new THREE.Mesh(this.d10_geometry, this.d100_material);
+    }
+    
+    function create_dice_materials(face_labels, size, margin) {
         function create_text_texture(text, color, back_color) {
             if (text == undefined) return null;
             var canvas = document.createElement("canvas");
@@ -468,12 +522,12 @@
         }
         var materials = [];
         for (var i = 0; i < face_labels.length; ++i)
-            materials.push(new THREE.MeshPhongMaterial($t.copyto(this.material_options,
-                        { map: create_text_texture(face_labels[i], this.label_color, this.dice_color) })));
+            materials.push(new THREE.MeshPhongMaterial($t.copyto(vars.material_options,
+                        { map: create_text_texture(face_labels[i], vars.label_color, vars.dice_color) })));
         return materials;
     }
 
-    this.create_d4_materials = function(size, margin, labels) {
+    function create_d4_materials(size, margin, labels) {
         function create_d4_text(text, color, back_color) {
             var canvas = document.createElement("canvas");
             var context = canvas.getContext("2d");
@@ -498,18 +552,18 @@
         }
         var materials = [];
         for (var i = 0; i < labels.length; ++i)
-            materials.push(new THREE.MeshPhongMaterial($t.copyto(this.material_options,
-                        { map: create_d4_text(labels[i], this.label_color, this.dice_color) })));
+            materials.push(new THREE.MeshPhongMaterial($t.copyto(vars.material_options,
+                        { map: create_d4_text(labels[i], vars.label_color, vars.dice_color) })));
         return materials;
     }
 
-    this.create_d4_geometry = function(radius) {
+    function create_d4_geometry(radius) {
         var vertices = [[1, 1, 1], [-1, -1, 1], [-1, 1, -1], [1, -1, -1]];
         var faces = [[1, 0, 2, 1], [0, 1, 3, 2], [0, 3, 2, 3], [1, 2, 3, 4]];
         return create_geom(vertices, faces, radius, -0.1, Math.PI * 7 / 6, 0.96);
     }
 
-    this.create_d6_geometry = function(radius) {
+    function create_d6_geometry(radius) {
         var vertices = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
                 [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]];
         var faces = [[0, 3, 2, 1, 1], [1, 2, 6, 5, 2], [0, 1, 5, 4, 3],
@@ -517,14 +571,14 @@
         return create_geom(vertices, faces, radius, 0.1, Math.PI / 4, 0.96);
     }
 
-    this.create_d8_geometry = function(radius) {
+    function create_d8_geometry(radius) {
         var vertices = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
         var faces = [[0, 2, 4, 1], [0, 4, 3, 2], [0, 3, 5, 3], [0, 5, 2, 4], [1, 3, 4, 5],
                 [1, 4, 2, 6], [1, 2, 5, 7], [1, 5, 3, 8]];
         return create_geom(vertices, faces, radius, 0, -Math.PI / 4 / 2, 0.965);
     }
 
-    this.create_d10_geometry = function(radius) {
+    function create_d10_geometry(radius) {
         var a = Math.PI * 2 / 10, k = Math.cos(a), h = 0.105, v = -1;
         var vertices = [];
         for (var i = 0, b = 0; i < 10; ++i, b += a)
@@ -537,7 +591,7 @@
         return create_geom(vertices, faces, radius, 0, Math.PI * 6 / 5, 0.945);
     }
 
-    this.create_d12_geometry = function(radius) {
+    function create_d12_geometry(radius) {
         var p = (1 + Math.sqrt(5)) / 2, q = 1 / p;
         var vertices = [[0, q, p], [0, q, -p], [0, -q, p], [0, -q, -p], [p, 0, q],
                 [p, 0, -q], [-p, 0, q], [-p, 0, -q], [q, p, 0], [q, -p, 0], [-q, p, 0],
@@ -549,7 +603,7 @@
         return create_geom(vertices, faces, radius, 0.2, -Math.PI / 4 / 2, 0.968);
     }
 
-    this.create_d20_geometry = function(radius) {
+    function create_d20_geometry(radius) {
         var t = (1 + Math.sqrt(5)) / 2;
         var vertices = [[-1, t, 0], [1, t, 0 ], [-1, -t, 0], [1, -t, 0],
                 [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t],
@@ -561,57 +615,7 @@
         return create_geom(vertices, faces, radius, -0.2, -Math.PI / 4 / 2, 0.955);
     }
 
-    this.create_d4 = function() {
-        if (!this.d4_geometry) this.d4_geometry = this.create_d4_geometry(this.scale * 1.2);
-        if (!this.d4_material) this.d4_material = new THREE.MeshFaceMaterial(
-                this.create_d4_materials(this.scale / 2, this.scale * 2, d4_labels[0]));
-        return new THREE.Mesh(this.d4_geometry, this.d4_material);
-    }
-
-    this.create_d6 = function() {
-        if (!this.d6_geometry) this.d6_geometry = this.create_d6_geometry(this.scale * 1.1);
-        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 0.9));
-        return new THREE.Mesh(this.d6_geometry, this.dice_material);
-    }
-
-    this.create_d8 = function() {
-        if (!this.d8_geometry) this.d8_geometry = this.create_d8_geometry(this.scale);
-        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.4));
-        return new THREE.Mesh(this.d8_geometry, this.dice_material);
-    }
-
-    this.create_d10 = function() {
-        if (!this.d10_geometry) this.d10_geometry = this.create_d10_geometry(this.scale * 0.9);
-        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.0));
-        return new THREE.Mesh(this.d10_geometry, this.dice_material);
-    }
-
-    this.create_d12 = function() {
-        if (!this.d12_geometry) this.d12_geometry = this.create_d12_geometry(this.scale * 0.9);
-        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.0));
-        return new THREE.Mesh(this.d12_geometry, this.dice_material);
-    }
-
-    this.create_d20 = function() {
-        if (!this.d20_geometry) this.d20_geometry = this.create_d20_geometry(this.scale);
-        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d20_dice_face_labels, this.scale / 2, 1.2));
-        return new THREE.Mesh(this.d20_geometry, this.dice_material);
-    }
-
-    this.create_d100 = function() {
-        if (!this.d10_geometry) this.d10_geometry = this.create_d10_geometry(this.scale * 0.9);
-        if (!this.d100_material) this.d100_material = new THREE.MeshFaceMaterial(
-                this.create_dice_materials(this.standart_d100_dice_face_labels, this.scale / 2, 1.5));
-        return new THREE.Mesh(this.d10_geometry, this.d100_material);
-    }
-
-
-    // PRIVATE
+    // HELPERS
 
     function rnd() {
         return Math.random();
@@ -770,7 +774,7 @@
     }
 
     function shift_dice_faces(dice, value, res) {
-        var r = that.dice_face_range[dice.dice_type];
+        var r = CONSTS.dice_face_range[dice.dice_type];
         if (dice.dice_type == 'd10' && value == 10) value = 0;
         if (!(value >= r[0] && value <= r[1])) return;
         var num = value - res;
@@ -786,10 +790,11 @@
         if (dice.dice_type == 'd4' && num != 0) {
             if (num < 0) num += 4;
             dice.material = new THREE.MeshFaceMaterial(
-                    that.create_d4_materials(that.scale / 2, that.scale * 2, d4_labels[num]));
+                    create_d4_materials(vars.scale / 2, vars.scale * 2, CONSTS.d4_labels[num]));
         }
         dice.geometry = geom;
     }
 
-}).apply(teal.dice = teal.dice || {});
+    return that;
+}());
 
