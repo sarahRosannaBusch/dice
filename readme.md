@@ -2,7 +2,7 @@
 
 My goal here is to make a truly satisfying dice roller; One that's the next best thing to rolling real dice. This library animates polyhedrons with numbers on each face that are visible while rolling, and includes a sound effect. Supports d4, d6, d8, d10, d12, d20, and d100 plus modifiers. Can be used to create stand-alone dice roller apps, or to integrate dice rolling into your javascript-based game. Visit https://sarahrosannabusch.ca/#diceRoller to see a demo of how it works.
 
-# USAGE
+# Usage
 
 Clone this repo and open index.html in a web browser. (Note that the index.html, main.js, and styles.css files included here are intended as a demo and should be replaced with your own application.)
 
@@ -29,14 +29,14 @@ Call start_throw() to roll the current set of dice.
 Or bind throw to a swipe event on the element passed into bind_swipe()
 
 ```javascript
-    box.start_swipe(elem);
+    box.bind_swipe(elem);
 ```
 
-Optional callback functions can be passed into both start_throw() and start_swipe().
+Optional callback functions can be passed into both start_throw() and bind_swipe().
 
 ```javascript
     box.start_throw(before_roll, after_roll);
-    box.start_swipe(elem, before_roll, after_roll);
+    box.bind_swipe(elem, before_roll, after_roll);
 
     // @brief callback function called when dice roll event starts
     // @param notation indicates which dice are going to roll
