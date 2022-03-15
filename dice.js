@@ -4,7 +4,7 @@
  * @brief generates polyhedral dice with roll animation and result calculation
  * @author Anton Natarov aka Teal (original author)
  * @author Sarah Rosanna Busch (refactor, see changelog)
- * @date 14 March 2022
+ * @date 15 March 2022
  * @dependencies teal.js, cannon.js, three.js
  */
 
@@ -17,6 +17,8 @@
  * - removing mouse event bindings (separating UI from dice roller)
  * - refactoring to module pattern and reducing publically available properties/methods
  * - removing dice notation getter callback in favour of setting dice to roll directly
+ * - adding sound effect
+ * - adding roll results to notation returned in after_roll callback
  */
 
 const DICE = (function() {
@@ -36,7 +38,8 @@ const DICE = (function() {
         dice_color: '#202020',
         ambient_light_color: 0xf0f0f0,
         spot_light_color: 0xefefef,
-        desk_color: '#101010', //canvas background, opacity set in reinit()
+        desk_color: '#101010', //canvas background
+        desk_opacity: 0.5,
         use_shadows: true,
         use_adapvite_timestep: true //todo: setting this to false improves performace a lot. but the dice rolls don't look as natural...
 
@@ -71,6 +74,7 @@ const DICE = (function() {
         this.scene = new THREE.Scene();
         this.world = new CANNON.World();
         this.diceToRoll = ''; //user input
+        this.container = container;
 
         this.renderer = window.WebGLRenderingContext
             ? new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -166,7 +170,7 @@ const DICE = (function() {
 
         if (this.desk) this.scene.remove(this.desk);
         this.desk = new THREE.Mesh(new THREE.PlaneGeometry(this.w * 2, this.h * 2, 1, 1), 
-                new THREE.MeshPhongMaterial({ color: vars.desk_color, opacity: 0.5, transparent: true }));
+                new THREE.MeshPhongMaterial({ color: vars.desk_color, opacity: vars.desk_opacity, transparent: true }));
         this.desk.receiveShadow = vars.use_shadows;
         this.scene.add(this.desk); 
 
@@ -221,20 +225,45 @@ const DICE = (function() {
         //TODO: how do large numbers of vectors affect performance?
         var vectors = box.generate_vectors(notation, vector, boost);
         box.rolling = true;
-        if (before_roll) before_roll.call(box, notation, roll);
-        else roll();
+        let request_results = null;        
+
+        let numDice = vectors.length;
+        numDice = numDice > 10 ? 10 : numDice;
+        for(let i = 0; i < numDice; i++) {
+            let volume = i/10;
+            if(volume <= 0) volume = 0.1;
+            if(volume > 1) volume = 1;
+            playSound(box.container, volume);
+            //todo: find a better way to do this
+        }
+
+        if (before_roll) {
+            request_results = before_roll(notation);
+        }
+        roll(request_results);
 
         //@param request_results (optional) - pass in an array of desired roll results
         //todo: when this param is used, animation isn't as smooth (uat not used?)
         function roll(request_results) {
-            if (after_roll) {
-                box.clear();
-                box.roll(vectors, request_results || notation.result, function(result) {
-                    if (after_roll) after_roll.call(box, notation, result);
-                    box.rolling = false;
-                    vars.use_adapvite_timestep = uat;
-                });
-            }
+            box.clear();
+            box.roll(vectors, request_results || notation.result, function(result) {
+                notation.result = result;
+                var res = result.join(' ');
+                if (notation.constant) {
+                    if (notation.constant > 0) res += ' +' + notation.constant;
+                    else res += ' -' + Math.abs(notation.constant);
+                }                
+                notation.resultTotal = (result.reduce(function(s, a) { return s + a; }) + notation.constant);
+                if (result.length > 1 || notation.constant) {
+                    res += ' = ' + notation.resultTotal;
+                }
+                notation.resultString = res;
+
+                if (after_roll) after_roll(notation);
+
+                box.rolling = false;
+                vars.use_adapvite_timestep = uat;
+            });
         }
     }
        
@@ -405,12 +434,22 @@ const DICE = (function() {
 
     // PUBLIC FUNCTIONS
 
+    //validates dice notation input
+    //notation should be in format "1d4+2d6"
     that.parse_notation = function(notation) {
         var no = notation.split('@');
         var dr0 = /\s*(\d*)([a-z]+)(\d+)(\s*(\+|\-)\s*(\d+)){0,1}\s*(\+|$)/gi;
         var dr1 = /(\b)*(\d+)(\b)*/gi;
-        var ret = { set: [], constant: 0, result: [], error: false }, res;
-        //TODO: performance issue here?
+        var ret = { 
+            set: [], //set of dice to roll
+            constant: 0, //modifier to add to result
+            result: [], //array of results of each die
+            resultTotal: 0, //dice results + constant
+            resultString: '', //printable result
+            error: false //input errors are ignored gracefully
+        }; 
+        var res;
+        //looks at each peice of the notation and adds dice and constants to results
         while (res = dr0.exec(no[0])) {
             var command = res[2];
             if (command != 'd') { ret.error = true; continue; }
@@ -793,6 +832,20 @@ const DICE = (function() {
                     create_d4_materials(vars.scale / 2, vars.scale * 2, CONSTS.d4_labels[num]));
         }
         dice.geometry = geom;
+    }
+    
+    //playSound function and audio file copied from 
+    //https://github.com/chukwumaijem/roll-a-die
+    function playSound(outerContainer, soundVolume) {
+        if (soundVolume === 0) return;
+        const audio = document.createElement('audio');
+        outerContainer.appendChild(audio);
+        audio.src = 'assets/nc93322.mp3'; //todo: make this configurable
+        audio.volume = soundVolume;
+        audio.play();
+        audio.onended = () => {
+          audio.remove();
+        };
     }
 
     return that;
