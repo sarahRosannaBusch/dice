@@ -97,6 +97,10 @@ body {
     padding: 1em;
 }
 
+.numPad {
+    margin: auto;
+}
+
 .bottom_field {
     position: absolute;
     text-align: center;
