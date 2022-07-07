@@ -8,6 +8,7 @@
  var main = (function() {
     var that = {}; 
     var elem = {}; 
+    var box = null;
 
     that.init = function() {
         elem.container = $t.id('diceRoller');
@@ -17,7 +18,7 @@
         elem.instructions = $t.id('instructions');
         elem.center_div = $t.id('center_div');
 
-        var box = new DICE.dice_box(elem.container);
+        box = new DICE.dice_box(elem.container);
         box.bind_swipe(elem.center_div, before_roll, after_roll);
 
         elem.textInput.size = elem.textInput.value.length; //so input field is only as wide as its contents
@@ -41,6 +42,7 @@
     }
 
     that.setInput = function() {
+        box.setDice(elem.textInput.value);
         show_numPad(false);
         show_instructions(true);
     }
@@ -53,18 +55,32 @@
         let text = elem.textInput.value;
         let selectedText = window.getSelection().toString();
         let caretPos = elem.textInput.selectionStart;
+        let selectionEnd = elem.textInput.selectionEnd;
         if(value === "del") {
             if(selectedText) {
-                text = text.replace(selectedText, '');
+                deleteText();
             } else {
-                
+                text = text.substring(0, caretPos) + text.substring(caretPos+1, text.length);
             }
         } else if(value === "bksp") {
-
+            if(selectedText) {
+                deleteText();
+            } else {
+                text = text.substring(0, caretPos-1) + text.substring(caretPos, text.length);
+            }
         } else {
-            text = text.replace(selectedText, '');
+            deleteText();
             text = text.substring(0, caretPos) + value + text.substring(caretPos, text.length);
-            elem.textInput.value = text;
+        }
+        elem.textInput.value = text;
+        caretPos++;
+        elem.textInput.selectionStart = caretPos;
+        elem.textInput.selectionEnd = caretPos;
+
+        function deleteText() {
+            text = text.substring(0, caretPos) + text.substring(selectionEnd, text.length);
+            elem.textInput.selectionStart = caretPos;
+            elem.textInput.selectionEnd = caretPos;
         }
     }
 
