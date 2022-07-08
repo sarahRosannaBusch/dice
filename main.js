@@ -6,7 +6,7 @@
  */
 
 window.onkeydown = function(e) {
-    console.log(e.code);
+    //console.log(e.code);
     if(e.code === "Enter" || e.code === "Escape") {
         main.setInput(); //closes numPad
     }
@@ -77,13 +77,14 @@ window.onkeydown = function(e) {
                 deleteText();
             } else {
                 text = text.substring(0, caretPos-1) + text.substring(caretPos, text.length);
+                caretPos--;
             }
         } else {
             deleteText();
             text = text.substring(0, caretPos) + value + text.substring(caretPos, text.length);
+            caretPos++;
         }
         elem.textInput.value = text;
-        caretPos++;
         elem.textInput.selectionStart = caretPos;
         elem.textInput.selectionEnd = caretPos;
 
@@ -131,8 +132,7 @@ window.onkeydown = function(e) {
     function before_roll(notation) {
         console.log('before_roll notation: ' + JSON.stringify(notation));
         show_instructions(false);
-        elem.result.innerHTML = '';
-        elem.result.style.display = 'none';        
+        elem.result.innerHTML = '';       
         return null;
     }
 
@@ -145,7 +145,6 @@ window.onkeydown = function(e) {
         } else {
             elem.result.innerHTML = notation.resultString;
         }
-        elem.result.style.display = 'block';
     }
 
     return that;
