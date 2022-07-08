@@ -5,36 +5,125 @@
  *  @date 15 March 2022
  */
 
+window.onkeydown = function(e) {
+    //console.log(e.code);
+    if(e.code === "Enter" || e.code === "Escape") {
+        main.setInput(); //closes numPad
+    }
+}
+
  var main = (function() {
     var that = {}; 
     var elem = {}; 
+    var vars = {
+        numpadShowing: false
+    }
+    var box = null;
 
     that.init = function() {
         elem.container = $t.id('diceRoller');
         elem.result = $t.id('result');
         elem.textInput = $t.id('textInput'); 
+        elem.numPad = $t.id('numPad');
         elem.instructions = $t.id('instructions');
         elem.center_div = $t.id('center_div');
 
-        var box = new DICE.dice_box(elem.container);
+        box = new DICE.dice_box(elem.container);
         box.bind_swipe(elem.center_div, before_roll, after_roll);
 
         elem.textInput.size = elem.textInput.value.length; //so input field is only as wide as its contents
-        $t.bind(elem.textInput, 'change', function(ev) { show_instructions(); }); //shows instructions
+        $t.bind(elem.textInput, 'change', function(ev) { //shows instructions
+            show_instructions(); 
+        }); 
         $t.bind(elem.textInput, 'input', function(ev) { 
             let size = elem.textInput.value.length;
             elem.textInput.size = size > 0 ? size : 1;
             box.setDice(textInput.value);
         });
+        $t.bind(elem.textInput, 'focus', function(ev) {
+            ev.preventDefault();
+            show_instructions(false);
+            show_numPad(true);
+        });
         box.setDice(textInput.value);
         //box.start_throw(); //start by throwing all the dice on the table
 
-        show_instructions();
+        show_instructions(true);
     }
 
-    // show 'Roll Dice' button
-    function show_instructions() {
-        elem.instructions.style.display = 'inline-block';
+    that.setInput = function() {
+        box.setDice(elem.textInput.value);
+        show_numPad(false);
+        show_instructions(true);
+    }
+
+    that.clearInput = function() {
+        elem.textInput.value = '';
+    }
+
+    that.input = function(value) {
+        let text = elem.textInput.value;
+        let selectedText = window.getSelection().toString();
+        let caretPos = elem.textInput.selectionStart;
+        let selectionEnd = elem.textInput.selectionEnd;
+        if(value === "del") {
+            if(selectedText) {
+                deleteText();
+            } else {
+                text = text.substring(0, caretPos) + text.substring(caretPos+1, text.length);
+            }
+        } else if(value === "bksp") {
+            if(selectedText) {
+                deleteText();
+            } else {
+                text = text.substring(0, caretPos-1) + text.substring(caretPos, text.length);
+                caretPos--;
+            }
+        } else {
+            deleteText();
+            text = text.substring(0, caretPos) + value + text.substring(caretPos, text.length);
+            caretPos++;
+        }
+        elem.textInput.value = text;
+        elem.textInput.selectionStart = caretPos;
+        elem.textInput.selectionEnd = caretPos;
+
+        function deleteText() {
+            text = text.substring(0, caretPos) + text.substring(selectionEnd, text.length);
+            elem.textInput.selectionStart = caretPos;
+            elem.textInput.selectionEnd = caretPos;
+        }
+    }
+
+    // show 'Roll Dice' swipe instructions
+    // param show = bool
+    function show_instructions(show) {
+        if(show) {
+            elem.instructions.style.display = 'inline-block';
+        } else {
+            elem.instructions.style.display = 'none';
+        }
+    }
+
+    // show input options
+    // param show = bool
+    function show_numPad(show) {
+        let focusInput = function(ev) {
+            if(vars.numpadShowing) {
+                elem.textInput.focus();
+            }
+        }
+
+        if(show) {
+            vars.numpadShowing = true;
+            elem.numPad.style.display = 'inline-block';
+            $t.bind(elem.textInput, 'blur', focusInput);
+        } else {
+            vars.numpadShowing = false;
+            $t.unbind(elem.textInput, 'blur', focusInput);
+            elem.textInput.blur();
+            elem.numPad.style.display = 'none';
+        }
     }
 
     // @brief callback function called when dice roll event starts
@@ -42,9 +131,8 @@
     // @return null for random result || array of desired results
     function before_roll(notation) {
         console.log('before_roll notation: ' + JSON.stringify(notation));
-        elem.instructions.style.display = 'none';
-        elem.result.innerHTML = '';
-        elem.result.style.display = 'none';        
+        show_instructions(false);
+        elem.result.innerHTML = '';       
         return null;
     }
 
@@ -57,7 +145,6 @@
         } else {
             elem.result.innerHTML = notation.resultString;
         }
-        elem.result.style.display = 'block';
     }
 
     return that;
