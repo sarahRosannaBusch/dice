@@ -5,9 +5,19 @@
  *  @date 15 March 2022
  */
 
+window.onkeydown = function(e) {
+    console.log(e.code);
+    if(e.code === "Enter" || e.code === "Escape") {
+        main.setInput(); //closes numPad
+    }
+}
+
  var main = (function() {
     var that = {}; 
     var elem = {}; 
+    var vars = {
+        numpadShowing: false
+    }
     var box = null;
 
     that.init = function() {
@@ -98,15 +108,20 @@
     // param show = bool
     function show_numPad(show) {
         let focusInput = function(ev) {
-            elem.textInput.focus();
+            if(vars.numpadShowing) {
+                elem.textInput.focus();
+            }
         }
 
         if(show) {
+            vars.numpadShowing = true;
             elem.numPad.style.display = 'inline-block';
             $t.bind(elem.textInput, 'blur', focusInput);
         } else {
-            elem.numPad.style.display = 'none';
+            vars.numpadShowing = false;
             $t.unbind(elem.textInput, 'blur', focusInput);
+            elem.textInput.blur();
+            elem.numPad.style.display = 'none';
         }
     }
 
