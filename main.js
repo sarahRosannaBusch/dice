@@ -85,13 +85,11 @@ window.onkeydown = function(e) {
             caretPos++;
         }
         elem.textInput.value = text;
-        elem.textInput.selectionStart = caretPos;
-        elem.textInput.selectionEnd = caretPos;
+        elem.textInput.setSelectionRange(caretPos, caretPos);
 
         function deleteText() {
             text = text.substring(0, caretPos) + text.substring(selectionEnd, text.length);
-            elem.textInput.selectionStart = caretPos;
-            elem.textInput.selectionEnd = caretPos;
+            elem.textInput.setSelectionRange(caretPos, caretPos);
         }
     }
 
