@@ -42,8 +42,10 @@ window.onkeydown = function(e) {
         });
         $t.bind(elem.textInput, 'focus', function(ev) {
             ev.preventDefault();
-            show_instructions(false);
-            show_numPad(true);
+            if(!vars.numpadShowing) {
+                show_instructions(false);
+                show_numPad(true);
+            }
         });
         box.setDice(textInput.value);
         //box.start_throw(); //start by throwing all the dice on the table
@@ -85,10 +87,12 @@ window.onkeydown = function(e) {
             text = text.substring(0, caretPos) + value + text.substring(caretPos, text.length);
             caretPos++;
         }
+        elem.textInput.focus();
         elem.textInput.value = text;
         elem.textInput.setSelectionRange(caretPos, caretPos);
 
         function deleteText() {
+            elem.textInput.focus();
             text = text.substring(0, caretPos) + text.substring(selectionEnd, text.length);
             elem.textInput.setSelectionRange(caretPos, caretPos);
         }
@@ -143,10 +147,10 @@ window.onkeydown = function(e) {
             elem.result.innerHTML = "Oops, your dice fell off the table. Refresh and roll again."
         } else {
             elem.result.innerHTML = notation.resultString;
-            let caretPos = elem.textInput.selectionStart;
-            let selectionEnd = elem.textInput.selectionEnd;
-            let debugElem = $t.id('debug');
-            debugElem.innerHTML = "caret: " + caretPos + " " + selectionEnd;
+            //let caretPos = elem.textInput.selectionStart;
+            //let selectionEnd = elem.textInput.selectionEnd;
+            //let debugElem = $t.id('debug');
+            //debugElem.innerHTML = "caret: " + caretPos + " " + selectionEnd;
         }
     }
 
