@@ -47,6 +47,10 @@ window.onkeydown = function(e) {
                 show_numPad(true);
             }
         });
+        $t.bind(elem.textInput, 'mouseup', function(ev) {
+            ev.preventDefault();
+        });
+        
         box.setDice(textInput.value);
         //box.start_throw(); //start by throwing all the dice on the table
 
