@@ -63,7 +63,8 @@ window.onkeydown = function(e) {
 
     that.input = function(value) {
         let text = elem.textInput.value;
-        let selectedText = window.getSelection().toString();
+        let selection = document.getSelection();
+        let selectedText = selection.toString();
         let caretPos = elem.textInput.selectionStart;
         let selectionEnd = elem.textInput.selectionEnd;
         if(value === "del") {
