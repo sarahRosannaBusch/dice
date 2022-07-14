@@ -89,12 +89,14 @@ window.onkeydown = function(e) {
         }
         elem.textInput.focus();
         elem.textInput.value = text;
-        elem.textInput.setSelectionRange(caretPos, caretPos);
+        //elem.textInput.setSelectionRange(caretPos, caretPos);
+        elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
 
         function deleteText() {
             elem.textInput.focus();
             text = text.substring(0, caretPos) + text.substring(selectionEnd, text.length);
-            elem.textInput.setSelectionRange(caretPos, caretPos);
+            //elem.textInput.setSelectionRange(caretPos, caretPos);
+            elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
         }
     }
 
