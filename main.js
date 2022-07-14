@@ -149,10 +149,6 @@ window.onkeydown = function(e) {
             elem.result.innerHTML = "Oops, your dice fell off the table. Refresh and roll again."
         } else {
             elem.result.innerHTML = notation.resultString;
-            //let caretPos = elem.textInput.selectionStart;
-            //let selectionEnd = elem.textInput.selectionEnd;
-            //let debugElem = $t.id('debug');
-            //debugElem.innerHTML = "caret: " + caretPos + " " + selectionEnd;
         }
     }
 
