@@ -2,7 +2,7 @@
 
 /** @brief 3d dice roller web app
  *  @author Sarah Rosanna Busch
- *  @date 15 March 2022
+ *  @date 9 July 2022
  */
 
 window.onkeydown = function(e) {
