@@ -41,7 +41,7 @@ window.onkeydown = function(e) {
             box.setDice(textInput.value);
         });
         $t.bind(elem.textInput, 'focus', function(ev) {
-            ev.preventDefault();
+            //ev.preventDefault();
             if(!vars.numpadShowing) {
                 show_instructions(false);
                 show_numPad(true);
@@ -50,7 +50,7 @@ window.onkeydown = function(e) {
         $t.bind(elem.textInput, 'mouseup', function(ev) {
             ev.preventDefault();
         });
-        
+
         box.setDice(textInput.value);
         //box.start_throw(); //start by throwing all the dice on the table
 
@@ -93,14 +93,18 @@ window.onkeydown = function(e) {
         }
         elem.textInput.focus();
         elem.textInput.value = text;
-        //elem.textInput.setSelectionRange(caretPos, caretPos);
-        elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
+        setTimeout(() => {
+            elem.textInput.setSelectionRange(caretPos, caretPos);
+            //elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
+        }, 1);
 
         function deleteText() {
             elem.textInput.focus();
             text = text.substring(0, caretPos) + text.substring(selectionEnd, text.length);
-            //elem.textInput.setSelectionRange(caretPos, caretPos);
-            elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
+            setTimeout(() => {
+                elem.textInput.setSelectionRange(caretPos, caretPos);
+                //elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
+            }, 1);
         }
     }
 
