@@ -65,6 +65,7 @@ body {
     max-width: 100%;
     text-overflow: ellipsis;
     padding: 0.2em;
+    text-decoration: none;
 }
 
 #textInput:focus {
@@ -112,6 +113,10 @@ body {
     margin: auto;
     padding-top: 15px;
     padding-bottom: 15px;
+}
+
+.numPad td {
+    cursor: pointer;
 }
 
 #numPad button {

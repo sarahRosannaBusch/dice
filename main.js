@@ -2,7 +2,7 @@
 
 /** @brief 3d dice roller web app
  *  @author Sarah Rosanna Busch
- *  @date 14 July 2022
+ *  @date 21 July 2022
  */
 
 window.onkeydown = function(e) {
@@ -16,7 +16,9 @@ window.onkeydown = function(e) {
     var that = {}; 
     var elem = {}; 
     var vars = {
-        numpadShowing: false
+        numpadShowing: false,
+        lastVal: '',
+        userTyping: false
     }
     var box = null;
 
@@ -31,7 +33,7 @@ window.onkeydown = function(e) {
         box = new DICE.dice_box(elem.container);
         box.bind_swipe(elem.center_div, before_roll, after_roll);
 
-        elem.textInput.size = elem.textInput.value.length; //so input field is only as wide as its contents
+        //elem.textInput.size = elem.textInput.value.length; //so input field is only as wide as its contents
         $t.bind(elem.textInput, 'change', function(ev) { //shows instructions
             show_instructions(); 
         }); 
@@ -45,7 +47,14 @@ window.onkeydown = function(e) {
             if(!vars.numpadShowing) {
                 show_instructions(false);
                 show_numPad(true);
+            } else if(vars.userTyping) {
+                _handleInput();
+                vars.userTyping = false;
             }
+        });
+        $t.bind(elem.textInput, 'blur', function(ev) {
+            vars.caretPos = elem.textInput.selectionStart;
+            vars.selectionEnd = elem.textInput.selectionEnd;
         });
         $t.bind(elem.textInput, 'mouseup', function(ev) {
             ev.preventDefault();
@@ -67,43 +76,43 @@ window.onkeydown = function(e) {
         elem.textInput.value = '';
     }
 
+    //called from numPad onclicks
     that.input = function(value) {
+        vars.lastVal = value;
+        vars.userTyping = true;
+        elem.textInput.focus();
+    }
+
+    function _handleInput() {
         let text = elem.textInput.value;
-        let selection = document.getSelection();
-        let selectedText = selection.toString();
-        let caretPos = elem.textInput.selectionStart;
-        let selectionEnd = elem.textInput.selectionEnd;
-        if(value === "del") {
+        let selectedText = (vars.caretPos === vars.selectionEnd) ? false : true;
+        if(vars.lastVal === "del") {
             if(selectedText) {
                 deleteText();
             } else {
-                text = text.substring(0, caretPos) + text.substring(caretPos+1, text.length);
+                text = text.substring(0, vars.caretPos) + text.substring(vars.caretPos+1, text.length);
             }
-        } else if(value === "bksp") {
+        } else if(vars.lastVal === "bksp") {
             if(selectedText) {
                 deleteText();
             } else {
-                text = text.substring(0, caretPos-1) + text.substring(caretPos, text.length);
-                caretPos--;
+                text = text.substring(0, vars.caretPos-1) + text.substring(vars.caretPos, text.length);
+                vars.caretPos--;
             }
         } else {
             deleteText();
-            text = text.substring(0, caretPos) + value + text.substring(caretPos, text.length);
-            caretPos++;
+            text = text.substring(0, vars.caretPos) + vars.lastVal + text.substring(vars.caretPos, text.length);
+            vars.caretPos++;
         }
-        elem.textInput.focus();
         elem.textInput.value = text;
         setTimeout(() => {
-            elem.textInput.setSelectionRange(caretPos, caretPos);
-            //elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
+            elem.textInput.setSelectionRange(vars.caretPos, vars.caretPos);
         }, 1);
 
         function deleteText() {
-            elem.textInput.focus();
-            text = text.substring(0, caretPos) + text.substring(selectionEnd, text.length);
+            text = text.substring(0, vars.caretPos) + text.substring(vars.selectionEnd, text.length);
             setTimeout(() => {
-                elem.textInput.setSelectionRange(caretPos, caretPos);
-                //elem.textInput.selectionStart = elem.textInput.selectionEnd = caretPos;
+                elem.textInput.setSelectionRange(vars.caretPos, vars.caretPos);
             }, 1);
         }
     }
@@ -121,19 +130,12 @@ window.onkeydown = function(e) {
     // show input options
     // param show = bool
     function show_numPad(show) {
-        let focusInput = function(ev) {
-            if(vars.numpadShowing) {
-                elem.textInput.focus();
-            }
-        }
-
         if(show) {
             vars.numpadShowing = true;
             elem.numPad.style.display = 'inline-block';
-            $t.bind(elem.textInput, 'blur', focusInput);
+            elem.textInput.focus();
         } else {
             vars.numpadShowing = false;
-            $t.unbind(elem.textInput, 'blur', focusInput);
             elem.textInput.blur();
             elem.numPad.style.display = 'none';
         }
