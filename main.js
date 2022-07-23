@@ -33,7 +33,6 @@ window.onkeydown = function(e) {
         box = new DICE.dice_box(elem.container);
         box.bind_swipe(elem.center_div, before_roll, after_roll);
 
-        //elem.textInput.size = elem.textInput.value.length; //so input field is only as wide as its contents
         $t.bind(elem.textInput, 'change', function(ev) { //shows instructions
             show_instructions(); 
         }); 
@@ -53,6 +52,8 @@ window.onkeydown = function(e) {
             }
         });
         $t.bind(elem.textInput, 'blur', function(ev) {
+            //necessary to do this here for iOS compatibility
+            //because they put cursor back to zero on blur
             vars.caretPos = elem.textInput.selectionStart;
             vars.selectionEnd = elem.textInput.selectionEnd;
         });
