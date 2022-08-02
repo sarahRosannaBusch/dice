@@ -1,3 +1,8 @@
+/* @brief 3d dice roller app stylesheet
+   @author Sarah Rosanna Busch
+   @date 9 July 2022
+   */
+
 * {
     box-sizing: border-box; /* padding and border are included in total width/height of all elements */
     margin: 0px;
@@ -24,6 +29,7 @@ body {
     height: 100%;
     width: 100%;
     z-index:-1;
+    overflow: hidden;
 }
 
 #canvas {
@@ -59,6 +65,7 @@ body {
     max-width: 100%;
     text-overflow: ellipsis;
     padding: 0.2em;
+    text-decoration: none;
 }
 
 #textInput:focus {
@@ -97,19 +104,50 @@ body {
     padding: 1em;
 }
 
+#numPad { /* container */
+    position: relative;
+    top: -25%;
+}
+
+.numPad { /* table */
+    margin: auto;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.numPad td {
+    cursor: pointer;
+}
+
+#numPad button {
+    padding: 0.75em;
+    width: 113px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    font-weight: bold;
+    color: black;
+}
+
 .bottom_field {
     position: absolute;
     text-align: center;
+    min-height: 1.5em;
     bottom: 5px;
     width: inherit;
     padding: 0px;
 }
 
 #result {
+    position: relative;
+    display: block;
+    min-height: 1.5em;
+    bottom: 5px;
     font-size: 32pt;
     word-spacing: 0.5em;
-    color: rgba(255,255,255,0.8);
+    color: rgba(255,255,255,0.9);
     background: rgba(0, 0, 0, 0.4);
     padding: 0.25em;
     padding-top: 0.1em;
+    margin-left: 5px;
+    margin-right: 5px;
 }
