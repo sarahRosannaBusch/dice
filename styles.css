@@ -1,15 +1,17 @@
-/* @brief 3d dice roller app stylesheet
-   @author Sarah Rosanna Busch
-   @date 9 July 2022
+/* @brief   3d dice roller app stylesheet
+   @author  Sarah Rosanna Busch
+   @date    10 Aug 2023
+   @version 0.1
    */
 
 * {
     box-sizing: border-box; /* padding and border are included in total width/height of all elements */
     margin: 0px;
+    font-size: 14pt;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 body {
-    font-family: Georgia;
     margin: 0;
     overflow-x: hidden;
     background: #202020;
@@ -21,13 +23,30 @@ body {
     width: 100vw;
 }
 
+header {
+    text-align: center;
+    color: white;
+    padding: 5px;
+}
+
+#helpBtn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 1.2rem;
+    height: 1.2rem;
+    border: none;
+    border-radius: 0.6rem;
+}
+
 /* ******* DICE ROLLER *********** */
 
 #diceRoller {
     position: absolute;
     top: 0;
-    height: 100%;
+    height: calc(100% - 4.5rem);
     width: 100%;
+    margin-top: 1.5rem;
     z-index:-1;
     overflow: hidden;
 }
@@ -46,44 +65,50 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    font-size: 26pt;
+}
+
+#diceLimit {
+    text-align: center;
+    color: red;
+    background-color: #050505;
+    padding: 0.5rem;
+    font-size: 10pt;
+    font-weight: bold;
 }
 
 .top_field {
     text-align: center;
     width: 100%;
-    padding: 5px;
     background-color: rgba(150,150,150,0.1);
 }
 
 #textInput { 
     text-align: center;
-    font-size: 26pt;
     border: none;
     color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(150,150,150,0.5);
-    max-width: 100%;
+    background-color: rgba(199, 199, 199, 0.7);
+    width: 100%;
     text-overflow: ellipsis;
     padding: 0.2em;
     text-decoration: none;
 }
 
 #textInput:focus {
-    background-color: rgba(150,150,150,0.7);
+    background-color: rgba(255, 255, 255, 0.7);
     outline: none;
 }
 
 .center_field {
+    position: relative;
     flex: 1;
     text-align: center;
-    height: 100%;
+    height: 80%;
     width: 100%;
     z-index: 100;
 }
 
 .center_field * {
     position: relative;
-    font-family: Trebuchet MS;
     background-color: rgba(255, 255, 255, 0.6);
     padding: 5px 15px;
     user-select: none;
@@ -96,7 +121,6 @@ body {
 }
 
 #instructions p {
-    font-size: 20pt;
     color: rgb(255, 255, 255);
     background: none;
     margin: auto;
@@ -105,11 +129,16 @@ body {
 }
 
 #numPad { /* container */
-    position: relative;
-    top: -25%;
+    position: absolute;
+    width: 200px;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .numPad { /* table */
+    width: 200px;
     margin: auto;
     padding-top: 15px;
     padding-bottom: 15px;
@@ -120,19 +149,20 @@ body {
 }
 
 #numPad button {
-    padding: 0.75em;
-    width: 113px;
+    padding: 0.5em;
+    margin-top: 5px;
+    width: 97px;
     border: none;
     background-color: rgba(255, 255, 255, 0.8);
-    font-weight: bold;
     color: black;
 }
 
 .bottom_field {
     position: absolute;
+    bottom: 0;
     text-align: center;
-    min-height: 1.5em;
-    bottom: 5px;
+    min-height: 3rem;
+    background: rgba(0, 0, 0, 0.4);
     width: inherit;
     padding: 0px;
 }
@@ -142,12 +172,9 @@ body {
     display: block;
     min-height: 1.5em;
     bottom: 5px;
-    font-size: 32pt;
     word-spacing: 0.5em;
     color: rgba(255,255,255,0.9);
-    background: rgba(0, 0, 0, 0.4);
-    padding: 0.25em;
-    padding-top: 0.1em;
+    padding: 0.5em;
     margin-left: 5px;
     margin-right: 5px;
 }

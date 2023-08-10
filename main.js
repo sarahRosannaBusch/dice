@@ -2,7 +2,8 @@
 
 /** @brief 3d dice roller web app
  *  @author Sarah Rosanna Busch
- *  @date 21 July 2022
+ *  @date 10 Aug 2023
+ *  @version 0.1
  */
 
 window.onkeydown = function(e) {
@@ -29,6 +30,7 @@ window.onkeydown = function(e) {
         elem.numPad = $t.id('numPad');
         elem.instructions = $t.id('instructions');
         elem.center_div = $t.id('center_div');
+        elem.diceLimit = $t.id('diceLimit');
 
         box = new DICE.dice_box(elem.container);
         box.bind_swipe(elem.center_div, before_roll, after_roll);
@@ -42,6 +44,7 @@ window.onkeydown = function(e) {
             box.setDice(textInput.value);
         });
         $t.bind(elem.textInput, 'focus', function(ev) {
+            elem.diceLimit.style.display = 'none';
             //ev.preventDefault();
             if(!vars.numpadShowing) {
                 show_instructions(false);
@@ -68,9 +71,35 @@ window.onkeydown = function(e) {
     }
 
     that.setInput = function() {
-        box.setDice(elem.textInput.value);
-        show_numPad(false);
-        show_instructions(true);
+        let inputVal = elem.textInput.value;
+        //check for d100 and add tens place die
+        if(inputVal.includes('d100')) {
+            let dIdx = inputVal.indexOf('d100');
+            let numD100 = '';
+            for(let i = dIdx - 1; i >= 0; i--) {
+                let digit = inputVal[i];
+                if(!isNaN(digit)) {
+                    numD100 = digit + numD100;
+                } else {
+                    break;
+                }                
+            }
+            if(numD100 === '') numD100 = '1';
+            //console.log('num d100s: ' + numD100);
+            for(let i = 0; i < numD100; i++) {
+                inputVal += '+d9';
+            }
+        }
+        //check for too many dice
+        let d = DICE.parse_notation(inputVal);
+        let numDice = d.set.length;
+        if(numDice > 20) {
+            elem.diceLimit.style.display = 'block';
+        } else {
+            box.setDice(inputVal);
+            show_numPad(false);
+            show_instructions(true);
+        }
     }
 
     that.clearInput = function() {
@@ -146,7 +175,7 @@ window.onkeydown = function(e) {
     // @param notation indicates which dice are going to roll
     // @return null for random result || array of desired results
     function before_roll(notation) {
-        console.log('before_roll notation: ' + JSON.stringify(notation));
+        //console.log('before_roll notation: ' + JSON.stringify(notation));
         show_instructions(false);
         elem.result.innerHTML = '';       
         return null;
@@ -155,9 +184,9 @@ window.onkeydown = function(e) {
     // @brief callback function called once dice stop moving
     // @param notation now includes results
     function after_roll(notation) {
-        console.log('after_roll notation: ' + JSON.stringify(notation));
+        //console.log('after_roll notation: ' + JSON.stringify(notation));
         if(notation.result[0] < 0) {
-            elem.result.innerHTML = "Oops, your dice fell off the table. Refresh and roll again."
+            elem.result.innerHTML = "Oops, your dice fell off the table. <br> Refresh and roll again."
         } else {
             elem.result.innerHTML = notation.resultString;
         }

@@ -4,7 +4,8 @@
  * @brief generates polyhedral dice with roll animation and result calculation
  * @author Anton Natarov aka Teal (original author)
  * @author Sarah Rosanna Busch (refactor, see changelog)
- * @date 15 March 2022
+ * @date 10 Aug 2023
+ * @version 1.1
  * @dependencies teal.js, cannon.js, three.js
  */
 
@@ -19,6 +20,7 @@
  * - removing dice notation getter callback in favour of setting dice to roll directly
  * - adding sound effect
  * - adding roll results to notation returned in after_roll callback
+ * - adding 'd9' option (d10 to be added to d100 properly)
  */
 
 const DICE = (function() {
@@ -46,11 +48,11 @@ const DICE = (function() {
     }
 
     const CONSTS = {
-        known_types: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'],
-        dice_face_range: { 'd4': [1, 4], 'd6': [1, 6], 'd8': [1, 8], 'd10': [0, 9],
+        known_types: ['d4', 'd6', 'd8', 'd9', 'd10', 'd12', 'd20', 'd100'],
+        dice_face_range: { 'd4': [1, 4], 'd6': [1, 6], 'd8': [1, 8], 'd9': [0, 9], 'd10': [0, 9], 
             'd12': [1, 12], 'd20': [1, 20], 'd100': [0, 9] },
-        dice_mass: { 'd4': 300, 'd6': 300, 'd8': 340, 'd10': 350, 'd12': 350, 'd20': 400, 'd100': 350 },
-        dice_inertia: { 'd4': 5, 'd6': 13, 'd8': 10, 'd10': 9, 'd12': 8, 'd20': 6, 'd100': 9 },
+        dice_mass: { 'd4': 300, 'd6': 300, 'd8': 340, 'd9': 350, 'd10': 350, 'd12': 350, 'd20': 400, 'd100': 350 },
+        dice_inertia: { 'd4': 5, 'd6': 13, 'd8': 10, 'd9': 9, 'd10': 9, 'd12': 8, 'd20': 6, 'd100': 9 },
         
         standart_d20_dice_face_labels: [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8',
                 '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
@@ -508,6 +510,13 @@ const DICE = (function() {
         if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
                 create_dice_materials(CONSTS.standart_d20_dice_face_labels, vars.scale / 2, 1.4));
         return new THREE.Mesh(this.d8_geometry, this.dice_material);
+    }
+
+    threeD_dice.create_d9 = function() {
+        if (!this.d10_geometry) this.d10_geometry = create_d10_geometry(vars.scale * 0.9);
+        if (!this.dice_material) this.dice_material = new THREE.MeshFaceMaterial(
+                create_dice_materials(CONSTS.standart_d20_dice_face_labels, vars.scale / 2, 1.0));
+        return new THREE.Mesh(this.d10_geometry, this.dice_material);
     }
 
     threeD_dice.create_d10 = function() {
