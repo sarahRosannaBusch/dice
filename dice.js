@@ -89,7 +89,7 @@ const DICE = (function() {
         this.reinit(container);
         $t.bind(container, 'resize', function() {
             //todo: this doesn't work :(
-            this.reinit(elem.canvas);
+            this.reinit(container);
         });
 
         this.world.gravity.set(0, 0, -9.8 * 800);
@@ -603,6 +603,10 @@ const DICE = (function() {
             materials.push(new THREE.MeshPhongMaterial($t.copyto(vars.material_options,
                         { map: create_d4_text(labels[i], vars.label_color, vars.dice_color) })));
         return materials;
+    }    
+
+    function calc_texture_size(approx) {
+        return Math.pow(2, Math.floor(Math.log(approx) / Math.log(2)));
     }
 
     function create_d4_geometry(radius) {
@@ -777,10 +781,6 @@ const DICE = (function() {
         //var geom = make_geom(vectors, faces, radius, tab, af); // Without chamfer
         geom.cannon_shape = create_shape(vectors, faces, radius);
         return geom;
-    }
-
-    function calc_texture_size(approx) {
-        return Math.pow(2, Math.floor(Math.log(approx) / Math.log(2)));
     }
 
     function make_random_vector(vector) {

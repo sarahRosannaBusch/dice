@@ -32,17 +32,21 @@ window.onkeydown = function(e) {
         elem.center_div = $t.id('center_div');
         elem.diceLimit = $t.id('diceLimit');
 
-        box = new DICE.dice_box(elem.container);
+        //box = new DICE.dice_box(elem.container);
+        DICE.dice_box("diceBox"); //param = id of canvas
+
         box.bind_swipe(elem.center_div, before_roll, after_roll);
 
         $t.bind(elem.textInput, 'change', function(ev) { //shows instructions
             show_instructions(); 
         }); 
+
         $t.bind(elem.textInput, 'input', function(ev) { 
             let size = elem.textInput.value.length;
             elem.textInput.size = size > 0 ? size : 1;
             box.setDice(textInput.value);
         });
+
         $t.bind(elem.textInput, 'focus', function(ev) {
             elem.diceLimit.style.display = 'none';
             //ev.preventDefault();
@@ -54,12 +58,14 @@ window.onkeydown = function(e) {
                 vars.userTyping = false;
             }
         });
+
         $t.bind(elem.textInput, 'blur', function(ev) {
             //necessary to do this here for iOS compatibility
             //because they put cursor back to zero on blur
             vars.caretPos = elem.textInput.selectionStart;
             vars.selectionEnd = elem.textInput.selectionEnd;
         });
+        
         $t.bind(elem.textInput, 'mouseup', function(ev) {
             ev.preventDefault();
         });
